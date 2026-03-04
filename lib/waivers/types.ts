@@ -1,0 +1,48 @@
+export const WAIVER_TYPES = {
+  conditional_progress: {
+    id: 'conditional_progress' as const,
+    name_en: 'Conditional Waiver and Release on Progress Payment',
+    name_es: 'Waiver Condicional — Pago Parcial (Progress Payment)',
+    description_en: 'Use when you are submitting a progress payment request and have NOT yet received payment. Your lien rights are only waived IF and WHEN payment clears.',
+    description_es: 'Usa este cuando pides un pago parcial y AUN NO te han pagado. Tus derechos de lien solo se pierden SI y CUANDO el pago se haga efectivo. Si no te pagan, conservas todos tus derechos.',
+    risk_level: 'low' as const,
+    risk_label_es: 'Riesgo Bajo — Tus derechos están protegidos hasta que recibas el pago',
+    risk_label_en: 'Low Risk — Your rights are protected until payment is received',
+    icon: 'shield-check',
+  },
+  unconditional_progress: {
+    id: 'unconditional_progress' as const,
+    name_en: 'Unconditional Waiver and Release on Progress Payment',
+    name_es: 'Waiver Incondicional — Pago Parcial (Progress Payment)',
+    description_en: 'Use ONLY when you have already received and deposited a progress payment. This waiver takes effect IMMEDIATELY upon signing, whether or not the check clears.',
+    description_es: 'Usa este SOLO cuando YA recibiste y depositaste un pago parcial. Este waiver es efectivo INMEDIATAMENTE al firmar, aunque el cheque no se haga efectivo. NO firmes esto si no tienes el dinero en tu cuenta.',
+    risk_level: 'medium' as const,
+    risk_label_es: 'Riesgo Medio — Asegúrate de tener el pago en mano antes de firmar',
+    risk_label_en: 'Medium Risk — Make sure you have payment in hand before signing',
+    icon: 'alert-triangle',
+  },
+  conditional_final: {
+    id: 'conditional_final' as const,
+    name_en: 'Conditional Waiver and Release on Final Payment',
+    name_es: 'Waiver Condicional — Pago Final (Final Payment)',
+    description_en: 'Use when requesting your final payment on a project and have NOT yet received it. Your lien rights are only waived IF and WHEN final payment clears.',
+    description_es: 'Usa este cuando pides tu pago FINAL del proyecto y AUN NO te han pagado. Tus derechos solo se pierden cuando recibas el pago completo. Si no te pagan, conservas tus derechos de lien.',
+    risk_level: 'low' as const,
+    risk_label_es: 'Riesgo Bajo — Protegido hasta recibir el pago final',
+    risk_label_en: 'Low Risk — Protected until final payment is received',
+    icon: 'shield-check',
+  },
+  unconditional_final: {
+    id: 'unconditional_final' as const,
+    name_en: 'Unconditional Waiver and Release on Final Payment',
+    name_es: 'Waiver Incondicional — Pago Final (Final Payment)',
+    description_en: 'Use ONLY when you have received your complete final payment. This permanently waives ALL lien rights on the project. There is no going back.',
+    description_es: 'Usa este SOLO cuando YA recibiste tu pago final COMPLETO. Esto elimina PERMANENTEMENTE todos tus derechos de lien en el proyecto. NO HAY VUELTA ATRÁS. No firmes esto si te deben cualquier cantidad.',
+    risk_level: 'high' as const,
+    risk_label_es: 'Riesgo Alto — Pierdes TODOS tus derechos permanentemente. Solo firma si ya tienes todo tu dinero.',
+    risk_label_en: 'High Risk — You permanently lose ALL rights. Only sign if fully paid.',
+    icon: 'alert-octagon',
+  },
+} as const
+
+export type WaiverTypeId = keyof typeof WAIVER_TYPES
