@@ -50,7 +50,7 @@ export function CompanyForm({ company, isSetup }: CompanyFormProps) {
       await upsertCompany(data)
       toast(t('saved'), 'success')
       if (isSetup) {
-        router.push('/')
+        router.push('/dashboard')
         router.refresh()
       }
     } catch {

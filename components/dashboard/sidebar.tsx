@@ -20,7 +20,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 const navItems = [
-  { href: '/', icon: LayoutDashboard, labelKey: 'dashboard' },
+  { href: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
   { href: '/projects', icon: FolderKanban, labelKey: 'projects' },
   { href: '/waivers', icon: FileText, labelKey: 'waivers' },
   { href: '/general-contractors', icon: Users, labelKey: 'contractors' },
@@ -45,7 +45,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
   }
 
   const isActive = (href: string) => {
-    if (href === '/') return pathname === '/'
+    if (href === '/dashboard') return pathname === '/dashboard'
     return pathname.startsWith(href)
   }
 
@@ -53,7 +53,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
     <>
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-navy-light px-6">
-        <Link href="/" className="text-xl font-bold text-white">
+        <Link href="/dashboard" className="text-xl font-bold text-white">
           Obra<span className="text-orange">Kit</span>
         </Link>
       </div>
