@@ -64,7 +64,11 @@
     "newProject": "Nuevo Proyecto",
     "newWaiver": "Nuevo Waiver",
     "noProjects": "Aún no tienes proyectos",
-    "createFirst": "Crea tu primer proyecto para comenzar"
+    "createFirst": "Crea tu primer proyecto para comenzar",
+    "waiversSent": "Waivers Enviados",
+    "waiversSigned": "Waivers Firmados",
+    "recentWaivers": "Waivers Recientes",
+    "viewAllWaivers": "Ver Todos los Waivers"
   },
   "projects": {
     "title": "Proyectos",
@@ -177,6 +181,15 @@
     "generated": "¡Tu waiver está listo!",
     "generateError": "Error al generar el waiver",
     "sendComingSoon": "Envío por correo próximamente",
+    "signatureLabel": "Tu Firma",
+    "signatureHint": "Dibuja tu firma con el dedo o el mouse",
+    "clearSignature": "Borrar",
+    "generateAndSign": "Firmar y Generar PDF",
+    "sendToGc": "Enviar al Contratista",
+    "sendSuccess": "Waiver enviado exitosamente",
+    "sendError": "Error al enviar el waiver",
+    "sentTo": "Enviado a {email}",
+    "noGcEmail": "Sin correo del contratista",
     "summary": "Resumen",
     "stepOf": "Paso {current} de {total}"
   },

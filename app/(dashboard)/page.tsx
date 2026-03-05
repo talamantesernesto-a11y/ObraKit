@@ -1,14 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
 import { StatsOverview } from '@/components/dashboard/stats-overview'
+import { RecentWaivers } from '@/components/dashboard/recent-waivers'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, FileText } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = createClient()
   const t = await getTranslations('dashboard')
+  const locale = await getLocale()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -44,6 +47,18 @@ export default async function DashboardPage() {
     .eq('company_id', company.id)
     .in('status', ['draft', 'generated'])
 
+  const { count: waiversSent } = await supabase
+    .from('waivers')
+    .select('*', { count: 'exact', head: true })
+    .eq('company_id', company.id)
+    .eq('status', 'sent')
+
+  const { count: waiversSigned } = await supabase
+    .from('waivers')
+    .select('*', { count: 'exact', head: true })
+    .eq('company_id', company.id)
+    .eq('status', 'signed')
+
   const { data: waiverSums } = await supabase
     .from('waivers')
     .select('amount')
@@ -59,6 +74,14 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  // Recent waivers
+  const { data: recentWaivers } = await supabase
+    .from('waivers')
+    .select('id, waiver_type, amount, status, created_at, project_id, projects(name)')
+    .eq('company_id', company.id)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -68,12 +91,20 @@ export default async function DashboardPage() {
             {t('welcome', { name: company.name })}
           </h1>
         </div>
-        <Link href="/projects/new">
-          <Button variant="accent">
-            <Plus className="h-4 w-4" />
-            {t('newProject')}
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/waivers">
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4" />
+              {t('viewAllWaivers')}
+            </Button>
+          </Link>
+          <Link href="/projects/new">
+            <Button variant="accent" size="sm">
+              <Plus className="h-4 w-4" />
+              {t('newProject')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -82,6 +113,8 @@ export default async function DashboardPage() {
         waiversThisMonth={waiversThisMonth || 0}
         pendingWaivers={pendingWaivers || 0}
         totalBilled={totalBilled}
+        waiversSent={waiversSent || 0}
+        waiversSigned={waiversSigned || 0}
       />
 
       {/* Recent Projects */}
@@ -114,6 +147,19 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Recent Waivers */}
+      {recentWaivers && recentWaivers.length > 0 && (
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-navy">{t('recentWaivers')}</h2>
+            <Link href="/waivers" className="text-sm text-orange hover:underline">
+              {t('viewAllWaivers')}
+            </Link>
+          </div>
+          <RecentWaivers waivers={recentWaivers as any} locale={locale} />
+        </div>
+      )}
     </div>
   )
 }

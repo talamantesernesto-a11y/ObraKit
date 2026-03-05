@@ -64,7 +64,11 @@
     "newProject": "New Project",
     "newWaiver": "New Waiver",
     "noProjects": "No projects yet",
-    "createFirst": "Create your first project to get started"
+    "createFirst": "Create your first project to get started",
+    "waiversSent": "Waivers Sent",
+    "waiversSigned": "Waivers Signed",
+    "recentWaivers": "Recent Waivers",
+    "viewAllWaivers": "View All Waivers"
   },
   "projects": {
     "title": "Projects",
@@ -177,6 +181,15 @@
     "generated": "Your waiver is ready!",
     "generateError": "Error generating waiver",
     "sendComingSoon": "Email delivery coming soon",
+    "signatureLabel": "Your Signature",
+    "signatureHint": "Draw your signature with finger or mouse",
+    "clearSignature": "Clear",
+    "generateAndSign": "Sign & Generate PDF",
+    "sendToGc": "Send to GC",
+    "sendSuccess": "Waiver sent successfully",
+    "sendError": "Failed to send waiver",
+    "sentTo": "Sent to {email}",
+    "noGcEmail": "No GC email on file",
     "summary": "Summary",
     "stepOf": "Step {current} of {total}"
   },

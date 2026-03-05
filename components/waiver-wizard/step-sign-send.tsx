@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Download, Send, CheckCircle, Loader2 } from 'lucide-react'
+import { SignaturePad } from './signature-pad'
 
 interface StepSignSendProps {
   projectId: string
@@ -14,15 +15,20 @@ interface StepSignSendProps {
   checkMaker: string
   checkAmount: number
   exceptions: string
+  gcEmail: string | null
   onGenerated: (waiverId: string, pdfUrl: string) => void
 }
 
 export function StepSignSend(props: StepSignSendProps) {
   const t = useTranslations('wizard')
+  const [signatureData, setSignatureData] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
-  const [generated, setGenerated] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [waiverId, setWaiverId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -40,6 +46,7 @@ export function StepSignSend(props: StepSignSendProps) {
           check_maker: props.checkMaker,
           check_amount: props.checkAmount,
           exceptions: props.exceptions,
+          signature_image: signatureData,
         }),
       })
 
@@ -47,7 +54,7 @@ export function StepSignSend(props: StepSignSendProps) {
 
       const data = await res.json()
       setPdfUrl(data.pdfUrl)
-      setGenerated(true)
+      setWaiverId(data.waiverId)
       props.onGenerated(data.waiverId, data.pdfUrl)
     } catch {
       setError(t('generateError'))
@@ -56,6 +63,29 @@ export function StepSignSend(props: StepSignSendProps) {
     }
   }
 
+  const handleSend = async () => {
+    if (!waiverId) return
+    setSending(true)
+    setSendError(null)
+
+    try {
+      const res = await fetch('/api/waivers/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ waiver_id: waiverId }),
+      })
+
+      if (!res.ok) throw new Error('Failed to send')
+      setSent(true)
+    } catch {
+      setSendError(t('sendError'))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const isGenerated = !!pdfUrl
+
   return (
     <div className="space-y-6">
       <div>
@@ -63,21 +93,30 @@ export function StepSignSend(props: StepSignSendProps) {
         <p className="mt-1 text-sm text-warm-dark">{t('step4Subtitle')}</p>
       </div>
 
-      {!generated ? (
+      {!isGenerated ? (
         <Card>
-          <CardContent className="flex flex-col items-center p-8">
+          <CardContent className="space-y-6 p-6">
             {generating ? (
-              <div className="flex items-center gap-3 text-warm-dark">
+              <div className="flex items-center justify-center gap-3 py-8 text-warm-dark">
                 <Loader2 className="h-6 w-6 animate-spin text-orange" />
                 <span className="text-lg">{t('generating')}</span>
               </div>
             ) : (
               <>
-                <Button variant="accent" size="lg" onClick={handleGenerate}>
-                  {t('step4Title')}
+                <SignaturePad onSignatureChange={setSignatureData} />
+
+                <Button
+                  variant="accent"
+                  size="lg"
+                  className="w-full"
+                  onClick={handleGenerate}
+                  disabled={!signatureData}
+                >
+                  {t('generateAndSign')}
                 </Button>
+
                 {error && (
-                  <p className="mt-4 text-sm text-risk-high">{error}</p>
+                  <p className="text-center text-sm text-risk-high">{error}</p>
                 )}
               </>
             )}
@@ -85,11 +124,11 @@ export function StepSignSend(props: StepSignSendProps) {
         </Card>
       ) : (
         <Card>
-          <CardContent className="p-8 text-center">
+          <CardContent className="space-y-6 p-8 text-center">
             <CheckCircle className="mx-auto h-12 w-12 text-risk-low" />
-            <h3 className="mt-4 text-lg font-semibold text-navy">{t('generated')}</h3>
+            <h3 className="text-lg font-semibold text-navy">{t('generated')}</h3>
 
-            <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               {pdfUrl && (
                 <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
                   <Button variant="accent">
@@ -98,11 +137,29 @@ export function StepSignSend(props: StepSignSendProps) {
                   </Button>
                 </a>
               )}
-              <Button variant="outline" disabled>
-                <Send className="h-4 w-4" />
-                {t('sendComingSoon')}
-              </Button>
+
+              {sent ? (
+                <div className="rounded-lg bg-status-signed/10 px-4 py-2">
+                  <p className="text-sm text-navy">
+                    {t('sentTo', { email: props.gcEmail })}
+                  </p>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={handleSend}
+                  disabled={!props.gcEmail || sending}
+                  loading={sending}
+                >
+                  <Send className="h-4 w-4" />
+                  {props.gcEmail ? t('sendToGc') : t('noGcEmail')}
+                </Button>
+              )}
             </div>
+
+            {sendError && (
+              <p className="text-sm text-risk-high">{sendError}</p>
+            )}
           </CardContent>
         </Card>
       )}

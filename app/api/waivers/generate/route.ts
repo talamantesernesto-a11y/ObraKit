@@ -78,6 +78,7 @@ export async function POST(request: Request) {
       checkAmount: parsed.check_amount,
       exceptions: parsed.exceptions,
       signatureDate: new Date().toISOString().split('T')[0],
+      signatureImage: parsed.signature_image || undefined,
     }
 
     // Generate PDF
@@ -87,9 +88,14 @@ export async function POST(request: Request) {
     const pdfUrl = await uploadWaiverPdf(company.id, waiver.id, pdfBuffer)
 
     // Update waiver with PDF URL and status
+    const hasSig = !!parsed.signature_image
     await supabase
       .from('waivers')
-      .update({ pdf_url: pdfUrl, status: 'generated' })
+      .update({
+        pdf_url: pdfUrl,
+        status: hasSig ? 'signed' : 'generated',
+        ...(hasSig ? { signed_at: new Date().toISOString() } : {}),
+      })
       .eq('id', waiver.id)
 
     return NextResponse.json({ waiverId: waiver.id, pdfUrl })

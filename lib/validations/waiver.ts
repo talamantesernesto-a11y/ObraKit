@@ -8,6 +8,7 @@ export const waiverSchema = z.object({
   check_maker: z.string().optional().default(''),
   check_amount: z.coerce.number().optional(),
   exceptions: z.string().optional().default(''),
+  signature_image: z.string().optional(),
 })
 
 export type WaiverFormData = z.infer<typeof waiverSchema>

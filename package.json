@@ -22,12 +22,15 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.71.2",
+    "react-signature-canvas": "^1.1.0-alpha.2",
+    "resend": "^6.9.3",
     "tailwind-merge": "^2.6.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.19.13",
     "@types/react": "^18.3.28",
+    "@types/react-signature-canvas": "^1.0.7",
     "autoprefixer": "^10.4.27",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",

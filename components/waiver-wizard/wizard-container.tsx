@@ -107,6 +107,7 @@ export function WizardContainer({ project, company, totalPreviouslyBilled }: Wiz
           checkMaker={details.check_maker}
           checkAmount={Number(details.check_amount) || 0}
           exceptions={details.exceptions}
+          gcEmail={(project.general_contractors as { contact_email: string | null } | null)?.contact_email || null}
           onGenerated={() => {
             router.refresh()
           }}

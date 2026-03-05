@@ -1,5 +1,5 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
 import { STATE_RULES } from '@/lib/waivers/state-rules'
 import { WAIVER_TYPES } from '@/lib/waivers/types'
 import type { WaiverPdfData } from '@/lib/waivers/generate-pdf'
@@ -181,11 +181,20 @@ export function CaliforniaWaiver(data: WaiverPdfData) {
         {/* Signature */}
         <View style={styles.signatureArea}>
           <View style={styles.signatureBlock}>
-            <View style={styles.signatureLine} />
+            <View style={styles.signatureLine}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+              {data.signatureImage && (
+                <Image src={data.signatureImage} style={{ width: 150, height: 25, objectFit: 'contain' }} />
+              )}
+            </View>
             <Text style={styles.signatureLabel}>Claimant&apos;s Signature</Text>
           </View>
           <View style={styles.signatureBlock}>
-            <View style={styles.signatureLine} />
+            <View style={styles.signatureLine}>
+              {data.signatureImage && (
+                <Text style={{ fontSize: 10, paddingTop: 10 }}>{data.signatureDate}</Text>
+              )}
+            </View>
             <Text style={styles.signatureLabel}>Date</Text>
           </View>
         </View>
@@ -193,7 +202,7 @@ export function CaliforniaWaiver(data: WaiverPdfData) {
         <View style={{ marginTop: 15 }}>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>Claimant&apos;s Title:</Text>
-            <Text style={styles.fieldValue}> </Text>
+            <Text style={styles.fieldValue}>{data.signatureImage ? data.claimantName : ' '}</Text>
           </View>
         </View>
 
