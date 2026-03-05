@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWaiverEmail } from '@/lib/email/resend'
 import { generateWaiverEmailHtml } from '@/lib/email/waiver-email-template'
 import { WAIVER_TYPES } from '@/lib/waivers/types'
@@ -48,9 +49,10 @@ export async function POST(request: Request) {
       .eq('id', waiver.company_id)
       .single()
 
-    // Download PDF from storage
+    // Download PDF from storage (admin client to bypass RLS)
+    const adminClient = createAdminClient()
     const filePath = `${waiver.company_id}/${waiver.id}.pdf`
-    const { data: pdfData, error: downloadError } = await supabase.storage
+    const { data: pdfData, error: downloadError } = await adminClient.storage
       .from('waivers')
       .download(filePath)
 

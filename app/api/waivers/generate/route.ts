@@ -74,9 +74,9 @@ export async function POST(request: Request) {
       ownerName: project.owner_name || 'N/A',
       throughDate: parsed.through_date,
       amount: parsed.amount,
-      checkMaker: parsed.check_maker,
-      checkAmount: parsed.check_amount,
-      exceptions: parsed.exceptions,
+      checkMaker: parsed.check_maker || undefined,
+      checkAmount: parsed.check_amount || undefined,
+      exceptions: parsed.exceptions || undefined,
       signatureDate: new Date().toISOString().split('T')[0],
       signatureImage: parsed.signature_image || undefined,
     }
