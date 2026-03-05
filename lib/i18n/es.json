@@ -35,7 +35,16 @@
     "passwordMismatch": "Las contraseñas no coinciden",
     "welcomeBack": "Bienvenido de nuevo",
     "createAccount": "Crea tu cuenta",
-    "subtitle": "Genera waivers profesionales en minutos"
+    "subtitle": "Genera waivers profesionales en minutos",
+    "forgotPasswordTitle": "Recuperar Contraseña",
+    "forgotPasswordSubtitle": "Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña",
+    "sendResetLink": "Enviar Enlace",
+    "resetLinkSent": "Te enviamos un correo con el enlace para restablecer tu contraseña",
+    "backToLogin": "Volver a Iniciar Sesión",
+    "resetPasswordTitle": "Nueva Contraseña",
+    "resetPasswordSubtitle": "Ingresa tu nueva contraseña",
+    "newPassword": "Nueva contraseña",
+    "passwordUpdated": "Contraseña actualizada. Redirigiendo..."
   },
   "nav": {
     "dashboard": "Inicio",

@@ -40,8 +40,8 @@ export async function middleware(request: NextRequest) {
     protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p)) ||
     request.nextUrl.pathname === '/'
 
-  const isAuthPage =
-    request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup'
+  const authPages = ['/login', '/signup', '/forgot-password', '/reset-password']
+  const isAuthPage = authPages.includes(request.nextUrl.pathname)
 
   if (!user && isProtected) {
     return NextResponse.redirect(new URL('/login', request.url))

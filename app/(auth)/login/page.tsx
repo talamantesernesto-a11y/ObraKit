@@ -71,6 +71,12 @@ export default function LoginPage() {
           <Button type="submit" className="w-full" loading={loading}>
             {t('login')}
           </Button>
+
+          <div className="text-center">
+            <Link href="/forgot-password" className="text-sm text-orange hover:underline">
+              {t('forgotPassword')}
+            </Link>
+          </div>
         </form>
       </CardContent>
       <CardFooter className="justify-center">

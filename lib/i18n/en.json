@@ -35,7 +35,16 @@
     "passwordMismatch": "Passwords don't match",
     "welcomeBack": "Welcome back",
     "createAccount": "Create your account",
-    "subtitle": "Generate professional lien waivers in minutes"
+    "subtitle": "Generate professional lien waivers in minutes",
+    "forgotPasswordTitle": "Reset Password",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a link to reset your password",
+    "sendResetLink": "Send Reset Link",
+    "resetLinkSent": "We sent you an email with a link to reset your password",
+    "backToLogin": "Back to Login",
+    "resetPasswordTitle": "New Password",
+    "resetPasswordSubtitle": "Enter your new password",
+    "newPassword": "New password",
+    "passwordUpdated": "Password updated. Redirecting..."
   },
   "nav": {
     "dashboard": "Dashboard",
