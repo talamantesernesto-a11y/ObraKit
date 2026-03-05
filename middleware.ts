@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
     protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p)) ||
     request.nextUrl.pathname === '/'
 
-  const authPages = ['/login', '/signup', '/forgot-password', '/reset-password']
+  const authPages = ['/login', '/signup', '/forgot-password']
   const isAuthPage = authPages.includes(request.nextUrl.pathname)
 
   if (!user && isProtected) {
