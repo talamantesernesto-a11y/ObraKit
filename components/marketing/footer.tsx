@@ -79,19 +79,29 @@ export async function Footer() {
             </h4>
             <ul className="mt-4 space-y-3">
               <li>
-                <span className="text-sm text-white/50">{t('footerCalifornia')}</span>
+                <Link href="/lien-waivers/california" className="text-sm text-white/50 transition-colors hover:text-white">
+                  {t('footerCalifornia')}
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-white/50">{t('footerGeorgia')}</span>
+                <Link href="/lien-waivers/georgia" className="text-sm text-white/50 transition-colors hover:text-white">
+                  {t('footerGeorgia')}
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-white/50">{t('footerTexas')}</span>
+                <Link href="/lien-waivers/texas" className="text-sm text-white/50 transition-colors hover:text-white">
+                  {t('footerTexas')}
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-white/50">{t('footerFlorida')}</span>
+                <Link href="/lien-waivers/florida" className="text-sm text-white/50 transition-colors hover:text-white">
+                  {t('footerFlorida')}
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-white/50">{t('footerNewYork')}</span>
+                <Link href="/lien-waivers/new-york" className="text-sm text-white/50 transition-colors hover:text-white">
+                  {t('footerNewYork')}
+                </Link>
               </li>
             </ul>
           </div>

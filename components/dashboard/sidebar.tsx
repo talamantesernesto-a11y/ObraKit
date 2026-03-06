@@ -29,9 +29,10 @@ const navItems = [
 
 interface SidebarProps {
   userEmail: string
+  plan?: string
 }
 
-export function Sidebar({ userEmail }: SidebarProps) {
+export function Sidebar({ userEmail, plan = 'free' }: SidebarProps) {
   const pathname = usePathname()
   const t = useTranslations('nav')
   const router = useRouter()
@@ -87,6 +88,18 @@ export function Sidebar({ userEmail }: SidebarProps) {
         <div className="mb-3">
           <LanguageToggle className="w-full justify-center text-gray-300 hover:bg-navy-light hover:text-white" />
         </div>
+        <Link
+          href="/settings/billing"
+          className={cn(
+            'mb-3 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+            plan === 'free'
+              ? 'bg-orange/20 text-orange hover:bg-orange/30'
+              : 'bg-risk-low/20 text-risk-low hover:bg-risk-low/30'
+          )}
+        >
+          {plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Team'}
+          {plan === 'free' && <span className="text-[10px] text-gray-400">Upgrade</span>}
+        </Link>
         <div className="mb-3 truncate text-xs text-gray-400">{userEmail}</div>
         <button
           onClick={handleSignOut}

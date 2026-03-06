@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { waiverSchema } from '@/lib/validations/waiver'
 import { generateWaiverPdf, type WaiverPdfData } from '@/lib/waivers/generate-pdf'
 import { uploadWaiverPdf } from '@/lib/waivers/storage'
+import { canCreateWaiver, shouldWatermark } from '@/lib/stripe/plan-limits'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -25,6 +26,17 @@ export async function POST(request: Request) {
 
     if (!company) {
       return NextResponse.json({ error: 'No company profile' }, { status: 400 })
+    }
+
+    // Plan enforcement: check waiver limit
+    const waiverCheck = canCreateWaiver(company)
+    if (!waiverCheck.allowed) {
+      return NextResponse.json({
+        error: 'Waiver limit reached',
+        code: 'WAIVER_LIMIT',
+        current: waiverCheck.current,
+        limit: waiverCheck.limit,
+      }, { status: 403 })
     }
 
     // Get project with GC
@@ -58,6 +70,20 @@ export async function POST(request: Request) {
 
     if (insertError) throw insertError
 
+    // Increment waiver count (with lazy monthly reset)
+    const now = new Date()
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const resetAt = company.waiver_count_reset_at ? new Date(company.waiver_count_reset_at) : new Date(0)
+    const needsReset = resetAt < firstOfMonth
+
+    await supabase
+      .from('companies')
+      .update({
+        waiver_count_this_month: needsReset ? 1 : company.waiver_count_this_month + 1,
+        waiver_count_reset_at: needsReset ? firstOfMonth.toISOString() : company.waiver_count_reset_at,
+      })
+      .eq('id', company.id)
+
     // Build PDF data
     const gc = project.general_contractors as { name: string } | null
     const pdfData: WaiverPdfData = {
@@ -79,6 +105,7 @@ export async function POST(request: Request) {
       exceptions: parsed.exceptions || undefined,
       signatureDate: new Date().toISOString().split('T')[0],
       signatureImage: parsed.signature_image || undefined,
+      showWatermark: shouldWatermark(company.plan),
     }
 
     // Generate PDF

@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server'
-import { MapPin } from 'lucide-react'
+import Link from 'next/link'
+import { MapPin, ArrowRight } from 'lucide-react'
+import { getSlugFromState } from '@/lib/waivers/state-slugs'
 
 export async function StateCompliance() {
   const t = await getTranslations('landing')
@@ -58,8 +60,9 @@ export async function StateCompliance() {
         {/* State cards */}
         <div className="mt-16 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {states.map((state) => (
-            <div
+            <Link
               key={state.abbr}
+              href={`/lien-waivers/${getSlugFromState(state.abbr)}`}
               className="group rounded-xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-sm transition-colors hover:bg-white/10"
             >
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange/20">
@@ -80,7 +83,10 @@ export async function StateCompliance() {
               <p className="mt-3 text-sm text-white/60">
                 {t('stateTypes', { count: state.types })}
               </p>
-            </div>
+              <div className="mt-3 flex items-center justify-center gap-1 text-xs text-orange-light opacity-0 transition-opacity group-hover:opacity-100">
+                <ArrowRight className="h-3 w-3" />
+              </div>
+            </Link>
           ))}
         </div>
 

@@ -28,8 +28,8 @@ export async function PricingPreview() {
       price: '$29',
       badge: t('pricingMostPopular'),
       cta: t('pricingProCta'),
-      ctaLink: '#',
-      ctaEnabled: false,
+      ctaLink: '/settings/billing',
+      ctaEnabled: true,
       highlighted: true,
       features: [
         t('pricingProFeature1'),
@@ -37,21 +37,6 @@ export async function PricingPreview() {
         t('pricingProFeature3'),
         t('pricingProFeature4'),
         t('pricingProFeature5'),
-      ],
-    },
-    {
-      name: t('pricingTeam'),
-      price: '$79',
-      cta: t('pricingTeamCta'),
-      ctaLink: '#',
-      ctaEnabled: false,
-      highlighted: false,
-      features: [
-        t('pricingTeamFeature1'),
-        t('pricingTeamFeature2'),
-        t('pricingTeamFeature3'),
-        t('pricingTeamFeature4'),
-        t('pricingTeamFeature5'),
       ],
     },
   ]
@@ -70,7 +55,7 @@ export async function PricingPreview() {
         </div>
 
         {/* Pricing cards */}
-        <div className="mx-auto mt-16 grid max-w-5xl gap-8 lg:grid-cols-3">
+        <div className="mx-auto mt-16 grid max-w-3xl gap-8 lg:grid-cols-2">
           {plans.map((plan) => (
             <div
               key={plan.name}

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Download, Send, CheckCircle, Loader2 } from 'lucide-react'
 import { SignaturePad } from './signature-pad'
+import { QrSignature } from './qr-signature'
+import { useTouchDevice } from '@/hooks/use-touch-device'
 
 interface StepSignSendProps {
   projectId: string
@@ -21,6 +23,7 @@ interface StepSignSendProps {
 
 export function StepSignSend(props: StepSignSendProps) {
   const t = useTranslations('wizard')
+  const isTouchDevice = useTouchDevice()
   const [signatureData, setSignatureData] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
@@ -104,6 +107,10 @@ export function StepSignSend(props: StepSignSendProps) {
             ) : (
               <>
                 <SignaturePad onSignatureChange={setSignatureData} />
+
+                {!isTouchDevice && (
+                  <QrSignature onSignatureChange={setSignatureData} />
+                )}
 
                 <Button
                   variant="accent"

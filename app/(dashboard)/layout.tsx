@@ -15,10 +15,16 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  const { data: company } = await supabase
+    .from('companies')
+    .select('plan')
+    .eq('user_id', user.id)
+    .single()
+
   return (
     <ToastProvider>
       <div className="min-h-screen bg-warm-white">
-        <Sidebar userEmail={user.email || ''} />
+        <Sidebar userEmail={user.email || ''} plan={company?.plan || 'free'} />
         <main className="lg:pl-64">
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             {children}

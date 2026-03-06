@@ -18,6 +18,7 @@ export type WaiverPdfData = {
   exceptions?: string
   signatureDate: string
   signatureImage?: string
+  showWatermark?: boolean
 }
 
 export async function generateWaiverPdf(data: WaiverPdfData): Promise<Buffer> {

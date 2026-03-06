@@ -19,11 +19,13 @@
     "lucide-react": "^0.400.0",
     "next": "^14.2.35",
     "next-intl": "^3.26.5",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.71.2",
     "react-signature-canvas": "^1.1.0-alpha.2",
     "resend": "^6.9.3",
+    "stripe": "^20.4.0",
     "tailwind-merge": "^2.6.1",
     "zod": "^3.25.76"
   },
