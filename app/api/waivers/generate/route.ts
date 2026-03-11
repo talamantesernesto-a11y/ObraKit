@@ -3,6 +3,8 @@ import { waiverSchema } from '@/lib/validations/waiver'
 import { generateWaiverPdf, type WaiverPdfData } from '@/lib/waivers/generate-pdf'
 import { uploadWaiverPdf } from '@/lib/waivers/storage'
 import { canCreateWaiver, shouldWatermark } from '@/lib/stripe/plan-limits'
+import { checkStateCompliance } from '@/lib/waivers/state-rules'
+import type { WaiverTypeId } from '@/lib/waivers/types'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -84,6 +86,12 @@ export async function POST(request: Request) {
       })
       .eq('id', company.id)
 
+    // Check state compliance and inject disclaimer/notarization info
+    const compliance = checkStateCompliance(
+      project.state,
+      parsed.waiver_type as WaiverTypeId
+    )
+
     // Build PDF data
     const gc = project.general_contractors as { name: string } | null
     const pdfData: WaiverPdfData = {
@@ -106,6 +114,11 @@ export async function POST(request: Request) {
       signatureDate: new Date().toISOString().split('T')[0],
       signatureImage: parsed.signature_image || undefined,
       showWatermark: shouldWatermark(company.plan),
+      // Compliance fields
+      complianceDisclaimer: compliance.disclaimerText_en || undefined,
+      requiresNotarization: compliance.requiresNotarization || undefined,
+      isPublicProject: parsed.is_public_project || undefined,
+      county: parsed.county || undefined,
     }
 
     // Generate PDF

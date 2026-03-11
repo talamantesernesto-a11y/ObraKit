@@ -4,6 +4,9 @@ import { getTranslations } from 'next-intl/server'
 import { getLocale } from 'next-intl/server'
 import { StatsOverview } from '@/components/dashboard/stats-overview'
 import { RecentWaivers } from '@/components/dashboard/recent-waivers'
+import { ActionOfDay } from '@/components/dashboard/action-of-day'
+import { QuickActions } from '@/components/dashboard/quick-actions'
+import { OnboardingChecklist } from '@/components/dashboard/onboarding-checklist'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus, FileText } from 'lucide-react'
@@ -47,6 +50,18 @@ export default async function DashboardPage() {
     .eq('company_id', company.id)
     .in('status', ['draft', 'generated'])
 
+  const { count: draftWaivers } = await supabase
+    .from('waivers')
+    .select('*', { count: 'exact', head: true })
+    .eq('company_id', company.id)
+    .eq('status', 'draft')
+
+  const { count: generatedWaivers } = await supabase
+    .from('waivers')
+    .select('*', { count: 'exact', head: true })
+    .eq('company_id', company.id)
+    .eq('status', 'generated')
+
   const { count: waiversSent } = await supabase
     .from('waivers')
     .select('*', { count: 'exact', head: true })
@@ -82,6 +97,10 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  // Check onboarding progress
+  const hasProject = (activeProjects || 0) > 0
+  const hasWaiver = (waiversThisMonth || 0) > 0 || (recentWaivers && recentWaivers.length > 0)
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -106,6 +125,23 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Onboarding Checklist — shows until all steps complete */}
+      <OnboardingChecklist
+        hasCompany={true}
+        hasProject={hasProject}
+        hasWaiver={!!hasWaiver}
+      />
+
+      {/* Action of the Day */}
+      <ActionOfDay
+        pendingWaivers={pendingWaivers || 0}
+        draftWaivers={draftWaivers || 0}
+        generatedWaivers={generatedWaivers || 0}
+      />
+
+      {/* Quick Actions */}
+      <QuickActions />
 
       {/* Stats */}
       <StatsOverview

@@ -78,6 +78,33 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: '#C55A1A',
   },
+  disclaimerBox: {
+    marginBottom: 20,
+    padding: 10,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 2,
+    borderColor: '#DC2626',
+  },
+  disclaimerText: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: '#991B1B',
+    lineHeight: 1.4,
+  },
+  publicProjectBox: {
+    marginTop: 15,
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#2563EB',
+  },
+  publicProjectText: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: '#1E40AF',
+    lineHeight: 1.4,
+  },
   signatureArea: {
     marginTop: 50,
     flexDirection: 'row',
@@ -96,6 +123,38 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: 'center',
     color: '#666',
+  },
+  notarySection: {
+    marginTop: 40,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+  },
+  notaryTitle: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  notaryText: {
+    fontSize: 9,
+    lineHeight: 1.5,
+    marginBottom: 8,
+  },
+  notaryFieldRow: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  notaryFieldLabel: {
+    fontSize: 9,
+    width: 120,
+  },
+  notaryFieldValue: {
+    fontSize: 9,
+    flex: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+    minHeight: 12,
   },
   footer: {
     position: 'absolute',
@@ -121,6 +180,13 @@ export function GenericWaiver(data: WaiverPdfData) {
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
+        {/* Compliance Disclaimer — shown for statutory states using generic template */}
+        {data.complianceDisclaimer && (
+          <View style={styles.disclaimerBox}>
+            <Text style={styles.disclaimerText}>{data.complianceDisclaimer}</Text>
+          </View>
+        )}
+
         {/* Letterhead */}
         <View style={styles.letterhead}>
           <Text style={styles.companyName}>{data.claimantName}</Text>
@@ -135,6 +201,12 @@ export function GenericWaiver(data: WaiverPdfData) {
           <Text style={styles.fieldLabel}>Job Location:</Text>
           <Text style={styles.fieldValue}>{data.jobLocation}</Text>
         </View>
+        {data.county && (
+          <View style={styles.fieldRow}>
+            <Text style={styles.fieldLabel}>County:</Text>
+            <Text style={styles.fieldValue}>{data.county}</Text>
+          </View>
+        )}
         <View style={styles.fieldRow}>
           <Text style={styles.fieldLabel}>Property Owner:</Text>
           <Text style={styles.fieldValue}>{data.ownerName}</Text>
@@ -172,19 +244,30 @@ export function GenericWaiver(data: WaiverPdfData) {
         <Text style={styles.sectionTitle}>WAIVER AND RELEASE</Text>
         {isConditional ? (
           <Text style={styles.paragraph}>
-            Upon receipt of a check from {data.checkMaker || 'the customer'} in the sum of {amountFormatted}, payable to {data.claimantName}, and when the check has been properly endorsed and has been paid by the bank on which it is drawn, {data.claimantName} waives and releases any mechanic&apos;s lien, stop payment notice, or bond right claims through {data.throughDate} {isFinal ? 'for the full and final payment' : 'for work performed through the date stated above'} on the project located at {data.jobLocation}.
+            Upon receipt of a check from {data.checkMaker || 'the customer'} in the sum of {amountFormatted}, payable to {data.claimantName}, and when the check has been properly endorsed and has been paid by the bank on which it is drawn, {data.claimantName} waives and releases any mechanic&apos;s lien, stop payment notice, or similar statutory lien right {isFinal ? 'for the full and final payment' : 'for work performed through the date stated above'} on the project located at {data.jobLocation}. This waiver and release is conditioned upon actual receipt of payment in good funds and does not waive any rights arising from work performed after the through date stated above.
           </Text>
         ) : (
-          <Text style={styles.paragraph}>
-            The undersigned, {data.claimantName}, has been paid and has received {isFinal ? 'final payment in full' : `a progress payment in the sum of ${amountFormatted}`} for labor, services, equipment, or materials furnished to the project located at {data.jobLocation}. The undersigned hereby unconditionally waives and releases any and all mechanic&apos;s lien, stop payment notice, or bond right claims {isFinal ? 'for all work performed on the project' : `through ${data.throughDate}`}.
-          </Text>
+          <>
+            <Text style={styles.paragraph}>
+              In consideration of the receipt of payment in the sum of {isFinal ? 'the full contract amount' : amountFormatted}, the undersigned, {data.claimantName}, acknowledges receipt of {isFinal ? 'final payment in full' : `a progress payment in the sum of ${amountFormatted}`} for labor, services, equipment, or materials furnished to the project located at {data.jobLocation}. The undersigned hereby waives and releases any mechanic&apos;s lien, stop payment notice, or similar statutory lien right {isFinal ? 'for all work performed on the project' : `through ${data.throughDate}`}.
+            </Text>
+          </>
+        )}
+
+        {/* Public Project Warning */}
+        {data.isPublicProject && (
+          <View style={styles.publicProjectBox}>
+            <Text style={styles.publicProjectText}>
+              PUBLIC PROJECT NOTICE: This project has been identified as a public project. On public projects, mechanics liens generally cannot be filed against government-owned property. Payment protection on public projects is typically provided through payment bonds (Miller Act / state Little Miller Acts). This lien waiver does not waive any payment bond rights. Consult with a licensed attorney regarding your bond rights.
+            </Text>
+          </View>
         )}
 
         {/* Unconditional warning */}
         {!isConditional && (
           <View style={styles.warningBox}>
             <Text style={styles.warningText}>
-              WARNING: This document waives rights unconditionally and is enforceable upon signing, even if payment has not been received. Only sign this document if you have confirmed receipt of payment.
+              WARNING: This document waives the above-described lien rights unconditionally and is enforceable upon signing, whether or not payment has actually been received. Only sign this document if you have confirmed receipt of payment in good funds.
             </Text>
           </View>
         )}
@@ -193,6 +276,9 @@ export function GenericWaiver(data: WaiverPdfData) {
         <Text style={styles.sectionTitle}>EXCEPTIONS</Text>
         <Text style={styles.paragraph}>
           {data.exceptions || 'None.'}
+        </Text>
+        <Text style={{ fontSize: 8, color: '#666', marginBottom: 10, lineHeight: 1.4 }}>
+          This waiver does not cover disputed amounts, pending change orders not included in the payment amount stated above, or retention not yet due and payable. This waiver releases only mechanic&apos;s lien and stop payment notice rights and does not release any contract claims, warranty obligations, or other rights not expressly stated.
         </Text>
 
         {/* Signature */}
@@ -226,6 +312,34 @@ export function GenericWaiver(data: WaiverPdfData) {
             <Text style={{ ...styles.fieldValue, borderBottomWidth: 1, borderBottomColor: '#000' }}> </Text>
           </View>
         </View>
+
+        {/* Notary Block — shown when state requires notarization */}
+        {data.requiresNotarization && (
+          <View style={styles.notarySection}>
+            <Text style={styles.notaryTitle}>NOTARY ACKNOWLEDGMENT</Text>
+            <Text style={styles.notaryText}>
+              State of _________________ County of _________________
+            </Text>
+            <Text style={styles.notaryText}>
+              On this _____ day of _____________, 20___, before me, the undersigned notary public, personally appeared _________________________, known to me (or proved to me on the basis of satisfactory evidence) to be the person whose name is subscribed to the within instrument and acknowledged to me that they executed the same in their authorized capacity, and that by their signature on the instrument the person, or the entity upon behalf of which the person acted, executed the instrument.
+            </Text>
+            <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={{ width: '45%' }}>
+                <View style={{ borderBottomWidth: 1, borderBottomColor: '#000', height: 30, marginBottom: 5 }} />
+                <Text style={styles.signatureLabel}>Notary Public Signature</Text>
+              </View>
+              <View style={{ width: '45%' }}>
+                <View style={{ borderWidth: 1, borderColor: '#000', height: 60, marginBottom: 5, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 8, color: '#999' }}>[NOTARY SEAL]</Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.notaryFieldRow}>
+              <Text style={styles.notaryFieldLabel}>Commission Expires:</Text>
+              <Text style={styles.notaryFieldValue}> </Text>
+            </View>
+          </View>
+        )}
 
         {data.showWatermark !== false && (
           <Text style={styles.footer}>Generated by ObraKit.ai</Text>

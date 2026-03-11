@@ -38,7 +38,8 @@ export default function SignupPage() {
     })
 
     if (authError) {
-      setError(authError.message)
+      console.error('Signup error:', authError.message)
+      setError(t('signupError'))
       setLoading(false)
       return
     }
@@ -53,7 +54,13 @@ export default function SignupPage() {
         <CardContent className="py-8 text-center">
           <div className="mb-4 text-4xl">📧</div>
           <h2 className="mb-2 text-xl font-semibold text-navy">{t('checkEmail')}</h2>
-          <p className="text-sm text-warm-dark">{email}</p>
+          <p className="mt-1 font-medium text-navy">{email}</p>
+          <p className="mt-3 text-sm text-warm-dark">{t('checkEmailHint')}</p>
+          <div className="mt-6">
+            <Link href="/login" className="text-sm text-orange hover:underline">
+              {t('backToLogin')}
+            </Link>
+          </div>
         </CardContent>
       </Card>
     )

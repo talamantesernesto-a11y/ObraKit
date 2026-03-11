@@ -8,20 +8,27 @@ import { cn } from '@/lib/utils'
 function FaqItem({
   question,
   answer,
+  id,
   isOpen,
   onToggle,
 }: {
   question: string
   answer: string
+  id: string
   isOpen: boolean
   onToggle: () => void
 }) {
+  const panelId = `${id}-panel`
+  const buttonId = `${id}-button`
+
   return (
     <div className="border-b border-warm-gray">
       <button
+        id={buttonId}
         onClick={onToggle}
         className="flex w-full items-center justify-between py-5 text-left"
         aria-expanded={isOpen}
+        aria-controls={panelId}
       >
         <span className="pr-4 text-base font-medium text-navy">{question}</span>
         <ChevronDown
@@ -32,6 +39,9 @@ function FaqItem({
         />
       </button>
       <div
+        id={panelId}
+        role="region"
+        aria-labelledby={buttonId}
         className={cn(
           'overflow-hidden transition-all duration-200',
           isOpen ? 'max-h-96 pb-5' : 'max-h-0'
@@ -59,18 +69,17 @@ export function Faq() {
   return (
     <section className="bg-warm-white py-20 sm:py-28">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-navy sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold text-navy sm:text-4xl">
             {t('faqTitle')}
           </h2>
         </div>
 
-        {/* FAQ items */}
         <div className="mt-12">
           {faqs.map((faq, index) => (
             <FaqItem
               key={index}
+              id={`faq-${index}`}
               question={faq.question}
               answer={faq.answer}
               isOpen={openIndex === index}
@@ -79,25 +88,6 @@ export function Faq() {
           ))}
         </div>
       </div>
-
-      {/* Schema.org FAQ JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: faqs.map((faq) => ({
-              '@type': 'Question',
-              name: faq.question,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: faq.answer,
-              },
-            })),
-          }),
-        }}
-      />
     </section>
   )
 }

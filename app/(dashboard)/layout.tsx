@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { ToastProvider } from '@/components/ui/toast'
+import { WhatsAppFloat } from '@/components/ui/whatsapp-float'
 
 export default async function DashboardLayout({
   children,
@@ -30,6 +31,7 @@ export default async function DashboardLayout({
             {children}
           </div>
         </main>
+        <WhatsAppFloat />
       </div>
     </ToastProvider>
   )

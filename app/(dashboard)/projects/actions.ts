@@ -66,13 +66,14 @@ export async function createProject(data: Record<string, unknown>) {
 }
 
 export async function updateProject(id: string, data: Record<string, unknown>) {
-  const { supabase } = await getCompanyId()
+  const { supabase, companyId } = await getCompanyId()
   const parsed = projectSchema.parse(data)
 
   const { error } = await supabase
     .from('projects')
     .update({ ...parsed, gc_id: parsed.gc_id || null, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('company_id', companyId)
 
   if (error) throw error
 

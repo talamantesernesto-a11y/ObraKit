@@ -17,6 +17,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: 'https://obrakit.ai/signup',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    },
+    {
+      url: 'https://obrakit.ai/login',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+    {
       url: 'https://obrakit.ai/lien-waivers',
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,

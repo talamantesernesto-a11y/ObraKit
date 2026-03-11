@@ -18,6 +18,8 @@ interface StepSignSendProps {
   checkAmount: number
   exceptions: string
   gcEmail: string | null
+  isPublicProject: boolean
+  county: string
   onGenerated: (waiverId: string, pdfUrl: string) => void
 }
 
@@ -50,6 +52,8 @@ export function StepSignSend(props: StepSignSendProps) {
           check_amount: props.checkAmount,
           exceptions: props.exceptions,
           signature_image: signatureData,
+          is_public_project: props.isPublicProject,
+          county: props.county,
         }),
       })
 

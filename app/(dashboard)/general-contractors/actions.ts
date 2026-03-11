@@ -36,13 +36,14 @@ export async function createContractor(data: Record<string, unknown>) {
 }
 
 export async function updateContractor(id: string, data: Record<string, unknown>) {
-  const { supabase } = await getCompanyId()
+  const { supabase, companyId } = await getCompanyId()
   const parsed = contractorSchema.parse(data)
 
   const { error } = await supabase
     .from('general_contractors')
     .update(parsed)
     .eq('id', id)
+    .eq('company_id', companyId)
 
   if (error) throw error
 

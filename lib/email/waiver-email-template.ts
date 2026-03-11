@@ -7,8 +7,23 @@ interface WaiverEmailTemplateParams {
   throughDate: string
 }
 
+/** Escape HTML special characters to prevent XSS in email templates */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export function generateWaiverEmailHtml(params: WaiverEmailTemplateParams): string {
-  const { claimantName, gcName, projectName, waiverTypeName, amount, throughDate } = params
+  const claimantName = escapeHtml(params.claimantName)
+  const gcName = escapeHtml(params.gcName)
+  const projectName = escapeHtml(params.projectName)
+  const waiverTypeName = escapeHtml(params.waiverTypeName)
+  const amount = escapeHtml(params.amount)
+  const throughDate = escapeHtml(params.throughDate)
 
   return `<!DOCTYPE html>
 <html>

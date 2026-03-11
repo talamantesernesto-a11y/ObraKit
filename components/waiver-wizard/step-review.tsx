@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { WAIVER_TYPES, type WaiverTypeId } from '@/lib/waivers/types'
+import { checkStateCompliance } from '@/lib/waivers/state-rules'
 import type { ValidationResult } from '@/lib/ai/validate-waiver'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
+import { Loader2, CheckCircle, AlertTriangle, XCircle, Shield, FileWarning, Info } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
 interface StepReviewProps {
@@ -19,6 +20,8 @@ interface StepReviewProps {
   projectContractValue: number
   totalPreviouslyBilled: number
   retentionPercentage: number
+  isPublicProject: boolean
+  county: string
 }
 
 export function StepReview(props: StepReviewProps) {
@@ -26,6 +29,12 @@ export function StepReview(props: StepReviewProps) {
   const locale = useLocale()
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Run state compliance check client-side for badges
+  const compliance = useMemo(
+    () => checkStateCompliance(props.state, props.waiverType),
+    [props.state, props.waiverType]
+  )
 
   useEffect(() => {
     async function validate() {
@@ -73,6 +82,47 @@ export function StepReview(props: StepReviewProps) {
         <h2 className="text-xl font-semibold text-navy">{t('step3Title')}</h2>
         <p className="mt-1 text-sm text-warm-dark">{t('step3Subtitle')}</p>
       </div>
+
+      {/* Compliance Badges */}
+      {(compliance.status === 'disclaimer_required' || compliance.requiresNotarization || compliance.swornStatementNote_en) && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="space-y-3 p-5">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-amber-600" />
+              <span className="text-sm font-semibold text-amber-800">{t('complianceNotices')}</span>
+            </div>
+
+            {compliance.status === 'disclaimer_required' && (
+              <div className="flex items-start gap-3">
+                <FileWarning className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <p className="text-sm text-amber-800">
+                  {locale === 'es' ? t('disclaimerBadge_es') : t('disclaimerBadge')}
+                </p>
+              </div>
+            )}
+
+            {compliance.requiresNotarization && (
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <p className="text-sm text-amber-800">
+                  {locale === 'es'
+                    ? t('notarizationBadge_es', { state: props.state })
+                    : t('notarizationBadge', { state: props.state })}
+                </p>
+              </div>
+            )}
+
+            {compliance.swornStatementNote_en && (
+              <div className="flex items-start gap-3">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <p className="text-sm text-blue-800">
+                  {locale === 'es' ? compliance.swornStatementNote_es : compliance.swornStatementNote_en}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Validation Status */}
       <Card>
@@ -124,6 +174,12 @@ export function StepReview(props: StepReviewProps) {
               <dt className="text-xs text-warm-dark">{t('throughDate')}</dt>
               <dd className="text-sm font-medium text-navy">{props.throughDate}</dd>
             </div>
+            {props.county && (
+              <div>
+                <dt className="text-xs text-warm-dark">{t('county')}</dt>
+                <dd className="text-sm font-medium text-navy">{props.county}</dd>
+              </div>
+            )}
             {props.checkMaker && (
               <div>
                 <dt className="text-xs text-warm-dark">{t('checkMaker')}</dt>
@@ -134,6 +190,15 @@ export function StepReview(props: StepReviewProps) {
               <div className="sm:col-span-2">
                 <dt className="text-xs text-warm-dark">{t('exceptions')}</dt>
                 <dd className="text-sm font-medium text-navy">{props.exceptions}</dd>
+              </div>
+            )}
+            {props.isPublicProject && (
+              <div className="sm:col-span-2">
+                <dd className="flex items-center gap-2">
+                  <Badge className="border border-blue-300 bg-blue-50 text-blue-700">
+                    {t('publicProjectBadge')}
+                  </Badge>
+                </dd>
               </div>
             )}
           </dl>

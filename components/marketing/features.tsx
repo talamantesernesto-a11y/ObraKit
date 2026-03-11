@@ -42,7 +42,7 @@ export async function Features() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-navy sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold text-navy sm:text-4xl">
             {t('featuresTitle')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-warm-dark">

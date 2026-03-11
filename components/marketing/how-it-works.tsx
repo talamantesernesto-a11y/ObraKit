@@ -30,7 +30,7 @@ export async function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-navy sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold text-navy sm:text-4xl">
             {t('howItWorksTitle')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-warm-dark">
@@ -59,7 +59,7 @@ export async function HowItWorks() {
                   </div>
 
                   {/* Text */}
-                  <h3 className="text-xl font-semibold text-navy">{step.title}</h3>
+                  <h3 className="font-display text-xl font-semibold text-navy">{step.title}</h3>
                   <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-warm-dark">
                     {step.description}
                   </p>

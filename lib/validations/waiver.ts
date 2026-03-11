@@ -9,6 +9,8 @@ export const waiverSchema = z.object({
   check_amount: z.coerce.number().optional(),
   exceptions: z.string().optional().default(''),
   signature_image: z.string().optional(),
+  is_public_project: z.boolean().optional().default(false),
+  county: z.string().optional().default(''),
 })
 
 export type WaiverFormData = z.infer<typeof waiverSchema>

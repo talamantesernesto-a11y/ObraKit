@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getOrCreateLead, handleMessage, updateLead, logMessage } from '@/lib/whatsapp/conversation'
+import { sendWhatsAppMessage } from '@/lib/whatsapp/send'
+import { MESSAGES } from '@/lib/whatsapp/messages'
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN!
-const WHATSAPP_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID!
 
 // GET - Webhook verification (Meta sends this to verify your endpoint)
 export async function GET(request: NextRequest) {
@@ -33,17 +34,7 @@ export async function POST(request: NextRequest) {
 
       const messages = change.value?.messages ?? []
       for (const message of messages) {
-        const from = message.from // sender phone number
-        const type = message.type
-        const timestamp = message.timestamp
-
-        console.log(`Message from ${from}: type=${type}`)
-
-        if (type === 'text') {
-          const text = message.text?.body ?? ''
-          console.log(`Text: ${text}`)
-          await sendWhatsAppMessage(from, getAutoReply(text))
-        }
+        await processMessage(message)
       }
     }
   }
@@ -51,49 +42,40 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ success: true }, { status: 200 })
 }
 
-function getAutoReply(incomingText: string): string {
-  const text = incomingText.toLowerCase().trim()
+async function processMessage(message: any) {
+  const from = message.from
+  const type = message.type
+  const waMessageId = message.id
 
-  if (text.includes('hola') || text.includes('hi') || text.includes('hello')) {
-    return '¡Hola! Bienvenido a ObraKit. Somos la plataforma para subcontratistas de construcción. ¿En qué te puedo ayudar?\n\n1. Quiero saber más sobre ObraKit\n2. Necesito soporte técnico\n3. Quiero hablar con un asesor'
+  console.log(`Message from ${from}: type=${type}`)
+
+  // Get or create lead
+  const lead = await getOrCreateLead(from)
+
+  // Dedup: if this message was already processed (webhook retry), skip
+  const dedup = await logMessage(lead.id, 'inbound', message.text?.body ?? `[${type}]`, waMessageId)
+  if (dedup === 'duplicate') {
+    console.log(`Skipping duplicate message: ${waMessageId}`)
+    return
   }
 
-  if (text === '1') {
-    return 'ObraKit te ayuda a manejar tus proyectos de construcción, lien waivers, pagos y más — todo desde una sola plataforma. ¿Te gustaría agendar una demo?'
+  // Handle non-text messages
+  if (type !== 'text') {
+    await sendWhatsAppMessage(from, MESSAGES.nonText)
+    await logMessage(lead.id, 'outbound', MESSAGES.nonText)
+    return
   }
 
-  if (text === '2') {
-    return 'Para soporte técnico, describe tu problema y un agente te contactará pronto.'
-  }
+  const text = message.text?.body ?? ''
+  console.log(`Text: ${text}`)
 
-  if (text === '3') {
-    return 'Un asesor de ventas te contactará en breve. ¿Cuál es tu nombre y el nombre de tu empresa?'
-  }
+  // Process through state machine
+  const { reply, updates } = handleMessage(lead, text)
 
-  return 'Gracias por tu mensaje. Un miembro de nuestro equipo te responderá pronto. Mientras tanto, escribe "hola" para ver nuestras opciones.'
-}
+  // Update lead in DB
+  await updateLead(lead.id, updates)
 
-async function sendWhatsAppMessage(to: string, text: string) {
-  const url = `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to,
-      type: 'text',
-      text: { body: text },
-    }),
-  })
-
-  if (!response.ok) {
-    const error = await response.text()
-    console.error('Failed to send WhatsApp message:', error)
-  }
-
-  return response
+  // Send reply
+  await sendWhatsAppMessage(from, reply)
+  await logMessage(lead.id, 'outbound', reply)
 }

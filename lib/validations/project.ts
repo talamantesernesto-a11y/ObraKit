@@ -17,10 +17,17 @@ export const projectSchema = z.object({
 export type ProjectFormData = z.infer<typeof projectSchema>
 
 // States supported for waiver generation
+// Tier 1: CA, TX, FL, GA, NY (original)
+// Tier 2: AZ, NV, CO, IL, NJ (expansion — March 2026)
 export const SUPPORTED_STATES = [
+  { value: 'AZ', label: 'Arizona' },
   { value: 'CA', label: 'California' },
-  { value: 'GA', label: 'Georgia' },
-  { value: 'TX', label: 'Texas' },
+  { value: 'CO', label: 'Colorado' },
   { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NV', label: 'Nevada' },
   { value: 'NY', label: 'New York' },
+  { value: 'TX', label: 'Texas' },
 ]
