@@ -7,26 +7,32 @@ export async function Hero() {
   const t = await getTranslations('landing')
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-navy-dark via-navy to-navy-light bg-blueprint">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-orange/8 blur-[100px]" />
-        <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-orange/5 blur-[80px]" />
-        <div className="absolute right-1/4 top-1/3 h-[200px] w-[200px] rounded-full bg-navy-light/20 blur-[60px]" />
-      </div>
+    <section className="relative overflow-hidden bg-navy-dark">
+      {/* Layered background: gradient + blueprint grid + noise */}
+      <div className="absolute inset-0 bg-gradient-to-br from-navy-dark via-navy to-navy-light" />
+      <div className="absolute inset-0 bg-blueprint" />
+
+      {/* Accent glow — warm orange bleed from top-right */}
+      <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-orange/10 blur-[120px]" />
+      <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-orange/5 blur-[100px]" />
+      {/* Subtle center glow for depth */}
+      <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-navy-light/15 blur-[80px]" />
+
+      {/* Diagonal accent stripe — construction hazard feel */}
+      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange via-orange-light to-orange" />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-28 sm:px-6 sm:pb-24 sm:pt-36 lg:px-8 lg:pb-28 lg:pt-40">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           {/* Left: Copy */}
           <div>
             {/* Social proof pill */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange/20 bg-orange/10 px-4 py-2 backdrop-blur-sm">
               <div className="flex -space-x-1.5">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-3.5 w-3.5 fill-orange text-orange" />
                 ))}
               </div>
-              <span className="text-xs font-medium text-white/80">
+              <span className="text-xs font-medium text-orange-light">
                 {t('heroSocialProof')}
               </span>
             </div>
@@ -41,7 +47,7 @@ export async function Hero() {
             {/* CTAs */}
             <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row">
               <Link href="/signup">
-                <Button variant="accent" size="lg" className="w-full text-base sm:w-auto">
+                <Button variant="accent" size="lg" className="w-full text-base shadow-lg shadow-orange/25 sm:w-auto">
                   {t('heroCta')}
                   <ArrowRight className="h-5 w-5" />
                 </Button>
@@ -132,7 +138,7 @@ export async function Hero() {
                     </div>
 
                     {/* Sign button (decorative mockup) */}
-                    <div aria-hidden="true" className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange py-3 text-sm font-semibold text-white">
+                    <div aria-hidden="true" className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange py-3 text-sm font-semibold text-white shadow-lg shadow-orange/20">
                       <Smartphone className="h-4 w-4" />
                       {t('mockupSign')}
                     </div>
