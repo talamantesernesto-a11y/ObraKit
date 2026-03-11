@@ -27,9 +27,9 @@ export async function Hero() {
           <div>
             {/* Social proof pill */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange/20 bg-orange/10 px-4 py-2 backdrop-blur-sm">
-              <div className="flex -space-x-1.5">
+              <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-orange text-orange" />
+                  <Star key={i} className="h-4 w-4 fill-orange text-orange" />
                 ))}
               </div>
               <span className="text-xs font-medium text-orange-light">

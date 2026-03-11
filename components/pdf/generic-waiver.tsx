@@ -278,7 +278,7 @@ export function GenericWaiver(data: WaiverPdfData) {
           {data.exceptions || 'None.'}
         </Text>
         <Text style={{ fontSize: 8, color: '#666', marginBottom: 10, lineHeight: 1.4 }}>
-          This waiver does not cover disputed amounts, pending change orders not included in the payment amount stated above, or retention not yet due and payable. This waiver releases only mechanic&apos;s lien and stop payment notice rights and does not release any contract claims, warranty obligations, or other rights not expressly stated.
+          This waiver does not cover disputed amounts, pending change orders not included in the payment amount stated above, or retention not yet due and payable. This waiver releases only mechanic&apos;s lien and stop payment notice rights and does not release any payment bond rights, contract claims, warranty obligations, or other rights not expressly stated.
         </Text>
 
         {/* Signature */}

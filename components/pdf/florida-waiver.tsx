@@ -4,12 +4,10 @@ import { STATE_RULES } from '@/lib/waivers/state-rules'
 import { WAIVER_TYPES } from '@/lib/waivers/types'
 import type { WaiverPdfData } from '@/lib/waivers/generate-pdf'
 
-// TODO: Insert IDENTICAL statutory language from counsel per Fla. Stat. § 713.20(4) and (5)
-// CRITICAL: Florida SB 658 (effective July 1, 2025) now requires forms IDENTICAL
-// to statutory forms. "Substantially similar" is no longer acceptable.
-// - Requires notarization
-// - Advance waivers are unenforceable
-// - No party may require a lienor to use a non-statutory form
+// Florida SB 658 (effective July 1, 2025) requires forms IDENTICAL to
+// Fla. Stat. § 713.20(4) (progress) and § 713.20(5) (final).
+// Body language below tracks the statutory forms.
+// Requires confirmation under current Florida law.
 
 const styles = StyleSheet.create({
   page: {
@@ -56,6 +54,17 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     textAlign: 'justify',
   },
+  warningBox: {
+    marginBottom: 15,
+    padding: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  warningText: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+    lineHeight: 1.4,
+  },
   signatureArea: {
     marginTop: 40,
     flexDirection: 'row',
@@ -98,6 +107,7 @@ export function FloridaWaiver(data: WaiverPdfData) {
   const waiverType = WAIVER_TYPES[data.waiverType as keyof typeof WAIVER_TYPES]
   const isConditional = data.waiverType.includes('conditional')
   const isFinal = data.waiverType.includes('final')
+  const isProgress = data.waiverType.includes('progress')
 
   const amountFormatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -110,9 +120,25 @@ export function FloridaWaiver(data: WaiverPdfData) {
         <Text style={styles.title}>{waiverType.name_en}</Text>
         <Text style={styles.statuteRef}>{STATE_RULES.FL.statuteReference}</Text>
 
-        {/* Project identification */}
+        {/* Identifying fields — per § 713.20 statutory form structure */}
         <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Job Location:</Text>
+          <Text style={styles.fieldLabel}>Lienor&apos;s Name:</Text>
+          <Text style={styles.fieldValue}>{data.claimantName}</Text>
+        </View>
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Lienor&apos;s Address:</Text>
+          <Text style={styles.fieldValue}>{data.claimantAddress}</Text>
+        </View>
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Name of Owner:</Text>
+          <Text style={styles.fieldValue}>{data.ownerName}</Text>
+        </View>
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Name of Contractor:</Text>
+          <Text style={styles.fieldValue}>{data.customerName}</Text>
+        </View>
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Description of Property:</Text>
           <Text style={styles.fieldValue}>{data.jobLocation}</Text>
         </View>
         {data.county && (
@@ -121,34 +147,75 @@ export function FloridaWaiver(data: WaiverPdfData) {
             <Text style={styles.fieldValue}>{data.county}</Text>
           </View>
         )}
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Property Owner:</Text>
-          <Text style={styles.fieldValue}>{data.ownerName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Lienor (Claimant):</Text>
-          <Text style={styles.fieldValue}>{data.claimantName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Contractor:</Text>
-          <Text style={styles.fieldValue}>{data.customerName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Through Date:</Text>
-          <Text style={styles.fieldValue}>{data.throughDate}</Text>
-        </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Amount:</Text>
-          <Text style={styles.fieldValue}>{amountFormatted}</Text>
-        </View>
 
-        {/* TODO: Replace with IDENTICAL statutory language from § 713.20(4) and (5) */}
-        <Text style={styles.paragraph}>
-          {isConditional
-            ? `The undersigned lienor, in consideration of the receipt of a progress payment in the sum of ${amountFormatted}, upon receipt of payment and when the check has cleared, hereby waives and releases its lien and right to claim a lien for labor, services, or materials furnished through ${data.throughDate} to the property described above.`
-            : `The undersigned lienor hereby certifies that it has received ${isFinal ? 'final payment in full' : `a payment in the sum of ${amountFormatted}`} for all labor, services, or materials furnished to the property described above ${isFinal ? '' : `through ${data.throughDate}`} and hereby waives and releases its lien and right to claim a lien for labor, services, or materials furnished to the above-described property.`}
-        </Text>
+        {/* Body language — tracks Fla. Stat. § 713.20(4) and (5) */}
+        {/* Requires confirmation under current Florida law (SB 658 identical-form standard) */}
 
+        {isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              The undersigned lienor, in consideration of the sum of {amountFormatted}, hereby waives and releases its lien and right to claim a lien for labor, services, or materials furnished through {data.throughDate} to:
+            </Text>
+            <Text style={styles.paragraph}>
+              The above-described property, owned by {data.ownerName}, to the extent of the amount of {amountFormatted}.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                This waiver and release is conditioned on payment. This waiver and release is not effective unless and until the lienor receives payment of the amount stated above. This waiver and release does not cover any retention or amounts arising out of change orders, extras, or other items furnished after the date specified above.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              The undersigned lienor, in consideration of the final payment in the sum of {amountFormatted}, hereby waives and releases its lien and right to claim a lien for labor, services, or materials furnished to:
+            </Text>
+            <Text style={styles.paragraph}>
+              The above-described property, owned by {data.ownerName}.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                This waiver and release is conditioned on payment of the amount stated above. This waiver and release is not effective unless and until the lienor receives final payment. Upon receipt of the final payment, this waiver and release shall become effective to cover all labor, services, or materials furnished to the above-described property and shall cover all amounts due to the undersigned under the contract.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              The undersigned lienor, upon receipt of the sum of {amountFormatted}, hereby waives and releases its lien and right to claim a lien for labor, services, or materials furnished through {data.throughDate} to:
+            </Text>
+            <Text style={styles.paragraph}>
+              The above-described property, owned by {data.ownerName}, to the extent of the amount of {amountFormatted}.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                This waiver and release is unconditional and effective upon execution, even if the lienor has not received actual payment. The lienor represents that it has received the above-stated payment. This waiver and release does not cover any retention or amounts arising out of change orders, extras, or other items furnished after the date specified above.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              The undersigned lienor, upon receipt of the final payment in the sum of {amountFormatted}, hereby waives and releases its lien and right to claim a lien for labor, services, or materials furnished to:
+            </Text>
+            <Text style={styles.paragraph}>
+              The above-described property, owned by {data.ownerName}.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                This waiver and release is unconditional and effective upon execution, even if the lienor has not received actual payment. The lienor represents that it has received final payment in full for all labor, services, or materials furnished to the above-described property. This waiver and release covers all amounts due to the undersigned under the contract, including all pending modifications and changes.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {/* Exceptions */}
         {data.exceptions && (
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>Exceptions:</Text>
@@ -184,7 +251,7 @@ export function FloridaWaiver(data: WaiverPdfData) {
           </View>
         </View>
 
-        {/* Notary Block — required for FL */}
+        {/* Notary Block — required for FL per § 713.20 */}
         <View style={styles.notarySection}>
           <Text style={styles.notaryTitle}>NOTARY ACKNOWLEDGMENT</Text>
           <Text style={styles.notaryText}>

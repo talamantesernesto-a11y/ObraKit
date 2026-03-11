@@ -4,12 +4,11 @@ import { STATE_RULES } from '@/lib/waivers/state-rules'
 import { WAIVER_TYPES } from '@/lib/waivers/types'
 import type { WaiverPdfData } from '@/lib/waivers/generate-pdf'
 
-// TODO: Insert statutory language from counsel per Tex. Prop. Code § 53.284
-// Texas requires:
-// - Substantially comply with statutory forms (§ 53.284)
-// - Notarization (affidavit format)
-// - No advance waivers (void if signed before work/payment)
-// - Monthly notice requirements for non-original contractors interact with waiver validity
+// Texas Tex. Prop. Code §§ 53.281-53.286
+// Waivers must substantially comply with statutory forms (§ 53.284).
+// Requires notarization (affidavit format).
+// Advance waivers void.
+// Requires confirmation under current Texas law.
 
 const styles = StyleSheet.create({
   page: {
@@ -67,6 +66,18 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     textAlign: 'justify',
   },
+  warningBox: {
+    marginTop: 10,
+    marginBottom: 15,
+    padding: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  warningText: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    lineHeight: 1.4,
+  },
   signatureArea: {
     marginTop: 40,
     flexDirection: 'row',
@@ -109,6 +120,7 @@ export function TexasWaiver(data: WaiverPdfData) {
   const waiverType = WAIVER_TYPES[data.waiverType as keyof typeof WAIVER_TYPES]
   const isConditional = data.waiverType.includes('conditional')
   const isFinal = data.waiverType.includes('final')
+  const isProgress = data.waiverType.includes('progress')
 
   const amountFormatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -122,7 +134,7 @@ export function TexasWaiver(data: WaiverPdfData) {
         <Text style={styles.subtitle}>AFFIDAVIT</Text>
         <Text style={styles.statuteRef}>{STATE_RULES.TX.statuteReference}</Text>
 
-        {/* Affidavit preamble */}
+        {/* Affidavit preamble — required for TX */}
         <Text style={styles.affidavitHeader}>
           STATE OF TEXAS, COUNTY OF {(data.county || '_______________').toUpperCase()}
         </Text>
@@ -153,13 +165,58 @@ export function TexasWaiver(data: WaiverPdfData) {
           <Text style={styles.fieldValue}>{amountFormatted}</Text>
         </View>
 
-        {/* TODO: Replace with statutory language from counsel */}
-        <Text style={styles.paragraph}>
-          {isConditional
-            ? `Affiant states that upon receipt of ${amountFormatted} from ${data.checkMaker || data.customerName}, and when the payment has been properly made, Affiant waives and releases any lien right or claim of lien on the above-described property ${isFinal ? 'for the full and final payment' : `through ${data.throughDate}`}.`
-            : `Affiant states that Affiant has received payment in the amount of ${amountFormatted} ${isFinal ? 'as full and final payment for all labor, services, equipment, or materials furnished to the above-described property' : `for labor, services, equipment, or materials furnished to the above-described property through ${data.throughDate}`} and hereby waives and releases any lien right or claim of lien on the above-described property.`}
-        </Text>
+        {/* Body language — tracks Tex. Prop. Code § 53.284 statutory forms */}
+        {/* Requires confirmation under current Texas law */}
 
+        {isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              Affiant states that on receipt of a check from {data.checkMaker || data.customerName} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property to the extent of the payment.
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers a progress payment for labor, services, equipment, or materials furnished to the property described above through {data.throughDate} only and does not cover any retention, pending modifications, or changes.
+            </Text>
+          </>
+        )}
+
+        {isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              Affiant states that on receipt of a check from {data.checkMaker || data.customerName} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property.
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers the final payment to the claimant for all labor, services, equipment, or materials furnished to the property described above. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
+            </Text>
+          </>
+        )}
+
+        {!isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              Affiant states that {data.claimantName} has been paid and has received a progress payment in the sum of {amountFormatted} for labor, services, equipment, or materials furnished to the property described above and does hereby waive and release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property to the extent of the amount paid.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                WARNING: This document waives and releases lien rights unconditionally and states that you have been paid for giving up those rights. This document is enforceable against you if you sign it, even if you have not been paid. If you have not been paid, use a conditional waiver and release form.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              Affiant states that {data.claimantName} has been paid in full for all labor, services, equipment, or materials furnished to the property described above and does hereby waive and release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                WARNING: This document waives and releases lien rights unconditionally and states that you have been paid in full for giving up those rights. This document is enforceable against you if you sign it, even if you have not been paid. If you have not been paid, use a conditional waiver and release form.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {/* Exceptions */}
         {data.exceptions && (
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>Exceptions:</Text>

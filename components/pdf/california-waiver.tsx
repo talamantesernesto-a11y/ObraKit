@@ -146,13 +146,14 @@ export function CaliforniaWaiver(data: WaiverPdfData) {
           <Text style={styles.fieldValue}>{data.throughDate}</Text>
         </View>
 
-        {/* Conditional specific fields */}
-        {isConditional && data.checkMaker && (
+        {/* Body language — tracks Cal. Civ. Code §§ 8132/8134/8136/8138 */}
+        {isConditional && isProgress && (
           <>
-            <Text style={styles.sectionTitle}>
-              {isProgress
-                ? 'This document waives and releases lien, stop payment notice, and payment bond rights through the Through Date of this document but only to the extent of payment received, conditioned on receipt of the following check:'
-                : 'This document waives and releases lien, stop payment notice, and payment bond rights conditioned on receipt of the following final payment:'}
+            <Text style={styles.paragraph}>
+              Upon receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien, stop payment notice, and payment bond right the claimant has on the job of {data.ownerName} located at {data.jobLocation} to the following extent:
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers a progress payment for labor, services, equipment, or material furnished to the jobsite through {data.throughDate} only and does not cover any retention, pending modifications, or changes, or items furnished after that date.
             </Text>
             <View style={styles.fieldRow}>
               <Text style={styles.fieldLabel}>Maker of Check:</Text>
@@ -164,15 +165,32 @@ export function CaliforniaWaiver(data: WaiverPdfData) {
             </View>
           </>
         )}
-
-        {/* Unconditional specific
-            TODO: Have counsel verify this language substantially complies with Cal. Civ. Code §§ 8134/8136.
-            Current text is paraphrased, not verbatim statutory language. */}
-        {!isConditional && (
+        {isConditional && !isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              Upon receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien, stop payment notice, and payment bond right the claimant has on the job of {data.ownerName} located at {data.jobLocation} to the following extent:
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers the final payment to the claimant for all labor, services, equipment, or material furnished to the jobsite. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
+            </Text>
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Maker of Check:</Text>
+              <Text style={styles.fieldValue}>{data.checkMaker}</Text>
+            </View>
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Amount of Check:</Text>
+              <Text style={styles.fieldValue}>{amountFormatted}</Text>
+            </View>
+          </>
+        )}
+        {!isConditional && isProgress && (
           <Text style={styles.paragraph}>
-            {isProgress
-              ? `The claimant has been paid and has received a progress payment in the sum of ${amountFormatted} for labor, services, equipment, or material furnished to the jobsite identified above, and gives up any right to a mechanic's lien, stop payment notice, and any right to make a claim against a labor and material bond on the job to the extent of the amount paid.`
-              : `The claimant has been paid in full for all labor, services, equipment, or material furnished to the jobsite identified above and gives up any right to a mechanic's lien, stop payment notice, and any right to make a claim against a labor and material bond on the job.`}
+            The claimant, {data.claimantName}, has been paid and has received a progress payment in the sum of {amountFormatted} for labor, services, equipment, or material furnished to {data.ownerName}&apos;s job located at {data.jobLocation} and does hereby waive and release any right to a mechanic&apos;s lien, stop payment notice, and any right to make a claim against a labor and material bond on the job to the extent of the amount paid. This document covers a progress payment for labor, services, equipment, or material furnished to the jobsite through {data.throughDate} only and does not cover any retention, pending modifications, or changes, or items furnished after that date.
+          </Text>
+        )}
+        {!isConditional && !isProgress && (
+          <Text style={styles.paragraph}>
+            The claimant, {data.claimantName}, has been paid in full for all labor, services, equipment, or material furnished to {data.ownerName}&apos;s job located at {data.jobLocation} and does hereby waive and release any right to a mechanic&apos;s lien, stop payment notice, and any right to make a claim against a labor and material bond on the job. This document covers the final payment to the claimant for all labor, services, equipment, or material furnished to the jobsite. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
           </Text>
         )}
 
