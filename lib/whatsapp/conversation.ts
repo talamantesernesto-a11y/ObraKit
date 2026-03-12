@@ -27,7 +27,7 @@ export type WhatsAppLead = {
   updated_at: string
 }
 
-type HandleResult = {
+export type HandleResult = {
   reply: string
   updates: Partial<WhatsAppLead>
 }

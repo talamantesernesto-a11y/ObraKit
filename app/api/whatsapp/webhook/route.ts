@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getOrCreateLead, handleMessage, updateLead, logMessage } from '@/lib/whatsapp/conversation'
+import { getOrCreateLead, updateLead, logMessage } from '@/lib/whatsapp/conversation'
 import { sendWhatsAppMessage } from '@/lib/whatsapp/send'
 import { MESSAGES } from '@/lib/whatsapp/messages'
 import { validateTwilioSignature } from '@/lib/whatsapp/validate'
+import { handleMessageHybrid } from '@/lib/whatsapp/ai-conversation-handler'
+import { getRecentMessages } from '@/lib/whatsapp/conversation-history'
 
 // POST - Receive incoming messages from Twilio
 // Twilio sends form-urlencoded data with fields: Body, From, To, MessageSid, etc.
@@ -30,7 +32,12 @@ export async function POST(request: NextRequest) {
   // Extract phone number without 'whatsapp:' prefix for DB storage
   const phone = from.replace('whatsapp:', '')
 
-  await processMessage(phone, body, messageSid, numMedia)
+  try {
+    await processMessage(phone, body, messageSid, numMedia)
+  } catch (error) {
+    console.error('processMessage failed:', error instanceof Error ? error.message : error)
+    // Still return 200 so Twilio does not retry and cause duplicates
+  }
 
   // Twilio expects a TwiML response or empty 200
   return new Response('<Response></Response>', {
@@ -45,7 +52,8 @@ async function processMessage(
   messageSid: string,
   numMedia: number
 ) {
-  console.log(`Message from ${phone}: body="${body}", media=${numMedia}`)
+  const phoneRedacted = phone.slice(0, -4).replace(/\d/g, '*') + phone.slice(-4)
+  console.log(`Message from ${phoneRedacted}: media=${numMedia}`)
 
   // Get or create lead
   const lead = await getOrCreateLead(phone)
@@ -65,8 +73,11 @@ async function processMessage(
     return
   }
 
-  // Process through state machine
-  const { reply, updates } = handleMessage(lead, text)
+  // Fetch recent messages for AI context
+  const recentMessages = await getRecentMessages(lead.id)
+
+  // Process through hybrid AI + state machine handler
+  const { reply, updates } = await handleMessageHybrid(lead, text, recentMessages)
 
   // Update lead in DB
   await updateLead(lead.id, updates)
