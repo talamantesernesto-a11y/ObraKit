@@ -4,13 +4,13 @@ import { STATE_RULES } from '@/lib/waivers/state-rules'
 import { WAIVER_TYPES } from '@/lib/waivers/types'
 import type { WaiverPdfData } from '@/lib/waivers/generate-pdf'
 
-// TODO: Insert statutory language from counsel per NRS § 108.2457
-// Nevada requires:
-// - Mandatory statutory forms
-// - Unconditional waivers MUST be notarized (NRS § 108.2457)
-// - Conditional waivers do NOT require notarization
-// - Advance waivers are void
-// - No modifications to statutory form language
+// Nevada NRS § 108.2457
+// Mandatory statutory forms for all 4 waiver types.
+// Unconditional waivers MUST be notarized (NRS § 108.2457).
+// Conditional waivers do NOT require notarization.
+// Advance waivers are void.
+// No modifications to statutory form language.
+// Requires confirmation under current Nevada law.
 
 const styles = StyleSheet.create({
   page: {
@@ -57,6 +57,18 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     textAlign: 'justify',
   },
+  warningBox: {
+    marginTop: 10,
+    marginBottom: 15,
+    padding: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  warningText: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    lineHeight: 1.4,
+  },
   signatureArea: {
     marginTop: 40,
     flexDirection: 'row',
@@ -99,6 +111,7 @@ export function NevadaWaiver(data: WaiverPdfData) {
   const waiverType = WAIVER_TYPES[data.waiverType as keyof typeof WAIVER_TYPES]
   const isConditional = data.waiverType.includes('conditional')
   const isFinal = data.waiverType.includes('final')
+  const isProgress = data.waiverType.includes('progress')
   const needsNotary = !isConditional // NV: only unconditional waivers require notarization
 
   const amountFormatted = new Intl.NumberFormat('en-US', {
@@ -112,7 +125,15 @@ export function NevadaWaiver(data: WaiverPdfData) {
         <Text style={styles.title}>{waiverType.name_en}</Text>
         <Text style={styles.statuteRef}>{STATE_RULES.NV.statuteReference}</Text>
 
-        {/* Project identification */}
+        {/* Identifying fields — per NRS § 108.2457 statutory form structure */}
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Name of Claimant:</Text>
+          <Text style={styles.fieldValue}>{data.claimantName}</Text>
+        </View>
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Name of Customer:</Text>
+          <Text style={styles.fieldValue}>{data.customerName}</Text>
+        </View>
         <View style={styles.fieldRow}>
           <Text style={styles.fieldLabel}>Job Location:</Text>
           <Text style={styles.fieldValue}>{data.jobLocation}</Text>
@@ -128,35 +149,82 @@ export function NevadaWaiver(data: WaiverPdfData) {
           <Text style={styles.fieldValue}>{data.ownerName}</Text>
         </View>
         <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Claimant:</Text>
-          <Text style={styles.fieldValue}>{data.claimantName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Contractor:</Text>
-          <Text style={styles.fieldValue}>{data.customerName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
           <Text style={styles.fieldLabel}>Through Date:</Text>
           <Text style={styles.fieldValue}>{data.throughDate}</Text>
         </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Amount:</Text>
-          <Text style={styles.fieldValue}>{amountFormatted}</Text>
-        </View>
 
-        {/* TODO: Replace with statutory language from NRS § 108.2457 */}
-        <Text style={styles.paragraph}>
-          {isConditional
-            ? `Upon receipt of payment in the sum of ${amountFormatted}, the undersigned hereby waives and releases its lien and right to claim a lien for labor, materials, equipment, or services furnished to the above-described property through ${data.throughDate}. This waiver is conditioned on actual receipt of payment in good funds.`
-            : `The undersigned hereby certifies that it has received ${isFinal ? 'final payment in full' : `payment in the sum of ${amountFormatted}`} for all labor, materials, equipment, or services furnished to the above-described property ${isFinal ? '' : `through ${data.throughDate}`} and hereby unconditionally waives and releases its lien and right to claim a lien for labor, materials, equipment, or services furnished to the above-described property.`}
-        </Text>
+        {/* Body language — tracks NRS § 108.2457 statutory forms */}
+        {/* Requires confirmation under current Nevada law */}
 
-        {data.exceptions && (
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Exceptions:</Text>
-            <Text style={styles.fieldValue}>{data.exceptions}</Text>
-          </View>
+        {isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              Upon receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any lien, any lien right, any right to make a claim against a surety bond, and any right to make a claim against a lien bond the claimant has on the job of {data.ownerName} located at {data.jobLocation} to the following extent:
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers a progress payment for labor, materials, equipment, or services furnished to the jobsite through {data.throughDate} only and does not cover any retention, pending modifications, or changes, or items furnished after that date.
+            </Text>
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Maker of Check:</Text>
+              <Text style={styles.fieldValue}>{data.checkMaker}</Text>
+            </View>
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Amount of Check:</Text>
+              <Text style={styles.fieldValue}>{amountFormatted}</Text>
+            </View>
+          </>
         )}
+
+        {isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              Upon receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any lien, any lien right, any right to make a claim against a surety bond, and any right to make a claim against a lien bond the claimant has on the job of {data.ownerName} located at {data.jobLocation} to the following extent:
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers the final payment to the claimant for all labor, materials, equipment, or services furnished to the jobsite. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
+            </Text>
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Maker of Check:</Text>
+              <Text style={styles.fieldValue}>{data.checkMaker}</Text>
+            </View>
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Amount of Check:</Text>
+              <Text style={styles.fieldValue}>{amountFormatted}</Text>
+            </View>
+          </>
+        )}
+
+        {!isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              The claimant, {data.claimantName}, has been paid and has received a progress payment in the sum of {amountFormatted} for labor, materials, equipment, or services furnished to {data.ownerName}&apos;s job located at {data.jobLocation} and does hereby waive and release any right to a lien, any lien right, any right to make a claim against a surety bond, and any right to make a claim against a lien bond on the job to the extent of the amount paid. This document covers a progress payment for labor, materials, equipment, or services furnished to the jobsite through {data.throughDate} only and does not cover any retention, pending modifications, or changes, or items furnished after that date.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                WARNING: THIS DOCUMENT WAIVES AND RELEASES LIEN, STOP NOTICE, SURETY BOND, AND LIEN BOND RIGHTS UNCONDITIONALLY AND STATES THAT YOU HAVE BEEN PAID FOR GIVING UP THOSE RIGHTS. THIS DOCUMENT IS ENFORCEABLE AGAINST YOU IF YOU SIGN IT, EVEN IF YOU HAVE NOT BEEN PAID. IF YOU HAVE NOT BEEN PAID, USE A CONDITIONAL WAIVER AND RELEASE FORM.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              The claimant, {data.claimantName}, has been paid in full for all labor, materials, equipment, or services furnished to {data.ownerName}&apos;s job located at {data.jobLocation} and does hereby waive and release any right to a lien, any lien right, any right to make a claim against a surety bond, and any right to make a claim against a lien bond on the job. This document covers the final payment to the claimant for all labor, materials, equipment, or services furnished to the jobsite. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                WARNING: THIS DOCUMENT WAIVES AND RELEASES LIEN, STOP NOTICE, SURETY BOND, AND LIEN BOND RIGHTS UNCONDITIONALLY AND STATES THAT YOU HAVE BEEN PAID FOR GIVING UP THOSE RIGHTS. THIS DOCUMENT IS ENFORCEABLE AGAINST YOU IF YOU SIGN IT, EVEN IF YOU HAVE NOT BEEN PAID. IF YOU HAVE NOT BEEN PAID, USE A CONDITIONAL WAIVER AND RELEASE FORM.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {/* Exceptions */}
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Exceptions:</Text>
+          <Text style={styles.fieldValue}>{data.exceptions || 'None'}</Text>
+        </View>
 
         {/* Signature */}
         <View style={styles.signatureArea}>
@@ -167,7 +235,7 @@ export function NevadaWaiver(data: WaiverPdfData) {
                 <Image src={data.signatureImage} style={{ width: 150, height: 25, objectFit: 'contain' }} />
               )}
             </View>
-            <Text style={styles.signatureLabel}>Claimant Signature</Text>
+            <Text style={styles.signatureLabel}>Claimant&apos;s Signature</Text>
           </View>
           <View style={styles.signatureBlock}>
             <View style={styles.signatureLine}>
@@ -194,7 +262,7 @@ export function NevadaWaiver(data: WaiverPdfData) {
               State of Nevada, County of {data.county || '_______________'}
             </Text>
             <Text style={styles.notaryText}>
-              On this _____ day of _____________, 20___, before me, the undersigned notary public, personally appeared {data.claimantName || '________________________'}, known to me (or proved to me on the basis of satisfactory evidence) to be the person whose name is subscribed to the within instrument and acknowledged to me that they executed the same in their authorized capacity.
+              On this _____ day of _____________, 20___, before me, the undersigned notary public, personally appeared {data.claimantName || '________________________'}, known to me (or proved to me on the basis of satisfactory evidence) to be the person whose name is subscribed to the within instrument and acknowledged to me that they executed the same in their authorized capacity, and that by their signature on the instrument the person, or the entity upon behalf of which the person acted, executed the instrument.
             </Text>
             <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ width: '45%' }}>

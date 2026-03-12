@@ -171,7 +171,7 @@ export function TexasWaiver(data: WaiverPdfData) {
         {isConditional && isProgress && (
           <>
             <Text style={styles.paragraph}>
-              Affiant states that on receipt of a check from {data.checkMaker || data.customerName} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property to the extent of the payment.
+              Affiant states that on receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property to the extent of the payment.
             </Text>
             <Text style={styles.paragraph}>
               This document covers a progress payment for labor, services, equipment, or materials furnished to the property described above through {data.throughDate} only and does not cover any retention, pending modifications, or changes.
@@ -182,7 +182,7 @@ export function TexasWaiver(data: WaiverPdfData) {
         {isConditional && isFinal && (
           <>
             <Text style={styles.paragraph}>
-              Affiant states that on receipt of a check from {data.checkMaker || data.customerName} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property.
+              Affiant states that on receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any mechanic&apos;s lien right, any right arising from a payment bond that complies with a statute, any claim against a payment bond that is not required by a statute, and any lien or claim on the property.
             </Text>
             <Text style={styles.paragraph}>
               This document covers the final payment to the claimant for all labor, services, equipment, or materials furnished to the property described above. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.

@@ -4,12 +4,13 @@ import { STATE_RULES } from '@/lib/waivers/state-rules'
 import { WAIVER_TYPES } from '@/lib/waivers/types'
 import type { WaiverPdfData } from '@/lib/waivers/generate-pdf'
 
-// TODO: Insert statutory language from counsel per MCL § 570.1115
-// Michigan requires:
-// - Statutory waiver forms (Conditional/Unconditional × Full/Partial)
-// - Notary recommended but not required
-// - Advance waivers restricted
-// - Contractor's Sworn Statement may be required (MCL § 570.1110)
+// Michigan MCL § 570.1115
+// Statutory waiver forms: Conditional/Unconditional × Full (Final)/Partial (Progress).
+// Must substantially comply with statutory form.
+// Notary recommended but not required.
+// Advance waivers restricted.
+// Contractor's Sworn Statement may also be required (MCL § 570.1110) — separate document.
+// Requires confirmation under current Michigan law.
 
 const styles = StyleSheet.create({
   page: {
@@ -56,6 +57,30 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     textAlign: 'justify',
   },
+  warningBox: {
+    marginTop: 10,
+    marginBottom: 15,
+    padding: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  warningText: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    lineHeight: 1.4,
+  },
+  swornStatementNote: {
+    marginTop: 20,
+    padding: 8,
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#E8702A',
+  },
+  swornStatementNoteText: {
+    fontSize: 8,
+    color: '#9A3412',
+    lineHeight: 1.4,
+  },
   signatureArea: {
     marginTop: 50,
     flexDirection: 'row',
@@ -81,6 +106,7 @@ export function MichiganWaiver(data: WaiverPdfData) {
   const waiverType = WAIVER_TYPES[data.waiverType as keyof typeof WAIVER_TYPES]
   const isConditional = data.waiverType.includes('conditional')
   const isFinal = data.waiverType.includes('final')
+  const isProgress = data.waiverType.includes('progress')
 
   const amountFormatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -93,7 +119,15 @@ export function MichiganWaiver(data: WaiverPdfData) {
         <Text style={styles.title}>{waiverType.name_en}</Text>
         <Text style={styles.statuteRef}>{STATE_RULES.MI.statuteReference}</Text>
 
-        {/* Project identification */}
+        {/* Identifying fields — per MCL § 570.1115 statutory form structure */}
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Name of Claimant:</Text>
+          <Text style={styles.fieldValue}>{data.claimantName}</Text>
+        </View>
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Name of Customer:</Text>
+          <Text style={styles.fieldValue}>{data.customerName}</Text>
+        </View>
         <View style={styles.fieldRow}>
           <Text style={styles.fieldLabel}>Job Location:</Text>
           <Text style={styles.fieldValue}>{data.jobLocation}</Text>
@@ -109,35 +143,66 @@ export function MichiganWaiver(data: WaiverPdfData) {
           <Text style={styles.fieldValue}>{data.ownerName}</Text>
         </View>
         <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Contractor/Claimant:</Text>
-          <Text style={styles.fieldValue}>{data.claimantName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Customer:</Text>
-          <Text style={styles.fieldValue}>{data.customerName}</Text>
-        </View>
-        <View style={styles.fieldRow}>
           <Text style={styles.fieldLabel}>Through Date:</Text>
           <Text style={styles.fieldValue}>{data.throughDate}</Text>
         </View>
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>Amount:</Text>
-          <Text style={styles.fieldValue}>{amountFormatted}</Text>
-        </View>
 
-        {/* TODO: Replace with statutory language from MCL § 570.1115 */}
-        <Text style={styles.paragraph}>
-          {isConditional
-            ? `Upon receipt of payment in the sum of ${amountFormatted} from ${data.checkMaker || data.customerName}, and when the check has been properly endorsed and has been paid by the bank on which it is drawn, the undersigned waives and releases any lien or right to claim a lien for labor, materials, or services furnished to the above-described property ${isFinal ? 'for the full and final payment' : `through ${data.throughDate}`}. This waiver is conditioned on actual receipt of payment in good funds.`
-            : `The undersigned certifies that it has received ${isFinal ? 'final payment in full' : `payment in the sum of ${amountFormatted}`} for all labor, materials, or services furnished to the above-described property ${isFinal ? '' : `through ${data.throughDate}`} and hereby unconditionally waives and releases any lien or right to claim a lien on the above-described property.`}
-        </Text>
+        {/* Body language — tracks MCL § 570.1115 statutory forms */}
+        {/* Requires confirmation under current Michigan law */}
 
-        {data.exceptions && (
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Exceptions:</Text>
-            <Text style={styles.fieldValue}>{data.exceptions}</Text>
-          </View>
+        {isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              Upon receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any construction lien, any rights arising from a payment bond, and any rights under the Michigan Construction Lien Act the claimant has on the job of {data.ownerName} located at {data.jobLocation} to the following extent:
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers a progress payment for labor, services, equipment, or material furnished to the jobsite through {data.throughDate} only and does not cover any retention, pending modifications, or changes, or items furnished after that date.
+            </Text>
+          </>
         )}
+
+        {isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              Upon receipt of a check from {data.checkMaker || '________________________'} in the sum of {amountFormatted} payable to {data.claimantName} and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document shall become effective to release any construction lien, any rights arising from a payment bond, and any rights under the Michigan Construction Lien Act the claimant has on the job of {data.ownerName} located at {data.jobLocation} to the following extent:
+            </Text>
+            <Text style={styles.paragraph}>
+              This document covers the final payment to the claimant for all labor, services, equipment, or material furnished to the jobsite. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
+            </Text>
+          </>
+        )}
+
+        {!isConditional && isProgress && (
+          <>
+            <Text style={styles.paragraph}>
+              The claimant, {data.claimantName}, has been paid and has received a progress payment in the sum of {amountFormatted} for labor, services, equipment, or material furnished to {data.ownerName}&apos;s job located at {data.jobLocation} and does hereby waive and release any right to a construction lien, any right to make a claim against a payment bond, and any rights under the Michigan Construction Lien Act on the job to the extent of the amount paid. This document covers a progress payment for labor, services, equipment, or material furnished to the jobsite through {data.throughDate} only and does not cover any retention, pending modifications, or changes, or items furnished after that date.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                WARNING: THIS DOCUMENT WAIVES AND RELEASES LIEN AND PAYMENT BOND RIGHTS UNCONDITIONALLY AND STATES THAT YOU HAVE BEEN PAID FOR GIVING UP THOSE RIGHTS. THIS DOCUMENT IS ENFORCEABLE AGAINST YOU IF YOU SIGN IT, EVEN IF YOU HAVE NOT BEEN PAID. IF YOU HAVE NOT BEEN PAID, USE A CONDITIONAL WAIVER AND RELEASE FORM.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isConditional && isFinal && (
+          <>
+            <Text style={styles.paragraph}>
+              The claimant, {data.claimantName}, has been paid in full for all labor, services, equipment, or material furnished to {data.ownerName}&apos;s job located at {data.jobLocation} and does hereby waive and release any right to a construction lien, any right to make a claim against a payment bond, and any rights under the Michigan Construction Lien Act on the job. This document covers the final payment to the claimant for all labor, services, equipment, or material furnished to the jobsite. This document covers all amounts due to the claimant under the contract, including all pending modifications and changes.
+            </Text>
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                WARNING: THIS DOCUMENT WAIVES AND RELEASES LIEN AND PAYMENT BOND RIGHTS UNCONDITIONALLY AND STATES THAT YOU HAVE BEEN PAID FOR GIVING UP THOSE RIGHTS. THIS DOCUMENT IS ENFORCEABLE AGAINST YOU IF YOU SIGN IT, EVEN IF YOU HAVE NOT BEEN PAID. IF YOU HAVE NOT BEEN PAID, USE A CONDITIONAL WAIVER AND RELEASE FORM.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {/* Exceptions */}
+        <View style={styles.fieldRow}>
+          <Text style={styles.fieldLabel}>Exceptions:</Text>
+          <Text style={styles.fieldValue}>{data.exceptions || 'None'}</Text>
+        </View>
 
         {/* Signature */}
         <View style={styles.signatureArea}>
@@ -148,7 +213,7 @@ export function MichiganWaiver(data: WaiverPdfData) {
                 <Image src={data.signatureImage} style={{ width: 150, height: 25, objectFit: 'contain' }} />
               )}
             </View>
-            <Text style={styles.signatureLabel}>Claimant Signature</Text>
+            <Text style={styles.signatureLabel}>Claimant&apos;s Signature</Text>
           </View>
           <View style={styles.signatureBlock}>
             <View style={styles.signatureLine}>
@@ -171,7 +236,12 @@ export function MichiganWaiver(data: WaiverPdfData) {
           </View>
         </View>
 
-        {/* No footer on statutory form templates */}
+        {/* Sworn Statement reminder */}
+        <View style={styles.swornStatementNote}>
+          <Text style={styles.swornStatementNoteText}>
+            NOTE: Michigan may also require a Contractor&apos;s Sworn Statement (MCL § 570.1110) listing all subcontractors and amounts owed. This is a separate document from this lien waiver.
+          </Text>
+        </View>
       </Page>
     </Document>
   )
