@@ -2,72 +2,68 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOrCreateLead, handleMessage, updateLead, logMessage } from '@/lib/whatsapp/conversation'
 import { sendWhatsAppMessage } from '@/lib/whatsapp/send'
 import { MESSAGES } from '@/lib/whatsapp/messages'
+import { validateTwilioSignature } from '@/lib/whatsapp/validate'
 
-const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN!
-
-// GET - Webhook verification (Meta sends this to verify your endpoint)
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const mode = searchParams.get('hub.mode')
-  const token = searchParams.get('hub.verify_token')
-  const challenge = searchParams.get('hub.challenge')
-
-  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('Webhook verified successfully')
-    return new Response(challenge, { status: 200 })
-  }
-
-  return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-}
-
-// POST - Receive incoming messages
+// POST - Receive incoming messages from Twilio
+// Twilio sends form-urlencoded data with fields: Body, From, To, MessageSid, etc.
+// Docs: https://www.twilio.com/docs/messaging/guides/webhook-request
 export async function POST(request: NextRequest) {
-  const body = await request.json()
+  const formData = await request.formData()
 
-  if (body.object !== 'whatsapp_business_account') {
-    return NextResponse.json({ error: 'Not a WhatsApp event' }, { status: 404 })
+  const body = formData.get('Body') as string | null
+  const from = formData.get('From') as string | null // e.g. 'whatsapp:+5215512345678'
+  const messageSid = formData.get('MessageSid') as string | null
+  const numMedia = parseInt(formData.get('NumMedia') as string ?? '0', 10)
+
+  // Validate required fields
+  if (!from || !messageSid) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  for (const entry of body.entry ?? []) {
-    for (const change of entry.changes ?? []) {
-      if (change.field !== 'messages') continue
-
-      const messages = change.value?.messages ?? []
-      for (const message of messages) {
-        await processMessage(message)
-      }
-    }
+  // Validate Twilio signature in production
+  const isValid = await validateTwilioSignature(request, formData)
+  if (!isValid) {
+    console.error('Invalid Twilio signature — rejecting request')
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
   }
 
-  return NextResponse.json({ success: true }, { status: 200 })
+  // Extract phone number without 'whatsapp:' prefix for DB storage
+  const phone = from.replace('whatsapp:', '')
+
+  await processMessage(phone, body, messageSid, numMedia)
+
+  // Twilio expects a TwiML response or empty 200
+  return new Response('<Response></Response>', {
+    status: 200,
+    headers: { 'Content-Type': 'text/xml' },
+  })
 }
 
-async function processMessage(message: any) {
-  const from = message.from
-  const type = message.type
-  const waMessageId = message.id
-
-  console.log(`Message from ${from}: type=${type}`)
+async function processMessage(
+  phone: string,
+  body: string | null,
+  messageSid: string,
+  numMedia: number
+) {
+  console.log(`Message from ${phone}: body="${body}", media=${numMedia}`)
 
   // Get or create lead
-  const lead = await getOrCreateLead(from)
+  const lead = await getOrCreateLead(phone)
 
   // Dedup: if this message was already processed (webhook retry), skip
-  const dedup = await logMessage(lead.id, 'inbound', message.text?.body ?? `[${type}]`, waMessageId)
+  const text = body ?? ''
+  const dedup = await logMessage(lead.id, 'inbound', text || `[media:${numMedia}]`, messageSid)
   if (dedup === 'duplicate') {
-    console.log(`Skipping duplicate message: ${waMessageId}`)
+    console.log(`Skipping duplicate message: ${messageSid}`)
     return
   }
 
-  // Handle non-text messages
-  if (type !== 'text') {
-    await sendWhatsAppMessage(from, MESSAGES.nonText)
+  // Handle non-text messages (media, location, etc.)
+  if (!body && numMedia > 0) {
+    await sendWhatsAppMessage(phone, MESSAGES.nonText)
     await logMessage(lead.id, 'outbound', MESSAGES.nonText)
     return
   }
-
-  const text = message.text?.body ?? ''
-  console.log(`Text: ${text}`)
 
   // Process through state machine
   const { reply, updates } = handleMessage(lead, text)
@@ -75,7 +71,7 @@ async function processMessage(message: any) {
   // Update lead in DB
   await updateLead(lead.id, updates)
 
-  // Send reply
-  await sendWhatsAppMessage(from, reply)
+  // Send reply via Twilio
+  await sendWhatsAppMessage(phone, reply)
   await logMessage(lead.id, 'outbound', reply)
 }

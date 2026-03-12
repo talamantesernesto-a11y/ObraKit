@@ -1,21 +1,29 @@
-const WHATSAPP_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID!
+// Twilio WhatsApp API — sends messages via Twilio REST API
+// Docs: https://www.twilio.com/docs/whatsapp/api
+
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID!
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN!
+const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER! // e.g. 'whatsapp:+18327431479'
 
 export async function sendWhatsAppMessage(to: string, text: string) {
-  const url = `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`
+  // Ensure the 'to' number has the whatsapp: prefix
+  const toFormatted = to.startsWith('whatsapp:') ? to : `whatsapp:${to}`
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`
+
+  const body = new URLSearchParams({
+    From: TWILIO_WHATSAPP_NUMBER,
+    To: toFormatted,
+    Body: text,
+  })
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-      'Content-Type': 'application/json',
+      'Authorization': `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to,
-      type: 'text',
-      text: { body: text },
-    }),
+    body: body.toString(),
   })
 
   if (!response.ok) {
