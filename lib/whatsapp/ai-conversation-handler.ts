@@ -62,12 +62,16 @@ export async function handleMessageHybrid(
 
   // 4. AI-powered handling
   try {
+    console.log(`Hybrid handler: calling AI for stage=${lead.funnel_stage}`)
     const aiResult = await interpretMessage(lead, text, recentMessages)
 
     // If AI returned nothing useful, fall back to menu
     if (aiResult.confidence === 0) {
+      console.log('Hybrid handler: AI returned confidence=0, falling back to menu')
       return handleMessage(lead, text)
     }
+
+    console.log(`Hybrid handler: AI confidence=${aiResult.confidence}, routing for stage=${lead.funnel_stage}`)
 
     // Route based on funnel stage
     if (isQualifyingStage(lead.funnel_stage)) {
@@ -161,29 +165,36 @@ function handleGreetingWithAI(
 ): HybridResult {
   const { extracted } = aiResult
 
-  // If intent is clear, route accordingly
+  // If intent is clear support, route there
   if (extracted.intent === 'support') {
     return { reply: MESSAGES.support, updates: {} }
   }
 
-  if (extracted.intent === 'learn_more' || extracted.intent === 'talk_to_advisor') {
-    // Check if they also provided qualifying data
-    if (extracted.name || extracted.trade || extracted.location_state) {
-      // Start qualifying with whatever data we have
-      const syntheticLead: WhatsAppLead = {
-        ...lead,
-        funnel_stage: 'qualifying_name',
-      }
-      return handleQualifyingWithAI(syntheticLead, aiResult)
-    }
+  // If intent is opt-out, show not interested message
+  if (extracted.intent === 'opt_out') {
+    return { reply: MESSAGES.notInterested, updates: { funnel_stage: 'not_interested' } }
+  }
 
+  // If AI extracted qualifying data (name, trade, location, size), use it
+  // regardless of intent — the user is providing info, so qualify them
+  const hasQualifyingData = extracted.name || extracted.trade || extracted.location_state || extracted.company_size
+  if (hasQualifyingData) {
+    const syntheticLead: WhatsAppLead = {
+      ...lead,
+      funnel_stage: 'qualifying_name',
+    }
+    return handleQualifyingWithAI(syntheticLead, aiResult)
+  }
+
+  // Intent detected but no data — advance to qualifying
+  if (extracted.intent === 'learn_more' || extracted.intent === 'talk_to_advisor') {
     return {
       reply: MESSAGES.askName,
       updates: { funnel_stage: 'qualifying_name' },
     }
   }
 
-  // Intent unclear — fall back to menu
+  // Intent unclear and no data — fall back to menu
   return handleMessage(lead, text)
 }
 

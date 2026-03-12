@@ -71,7 +71,10 @@ export async function interpretMessage(
       return EMPTY_RESULT
     }
 
-    return parseAndValidateResponse(textBlock.text)
+    console.log('AI interpreter raw response:', textBlock.text.substring(0, 500))
+    const result = parseAndValidateResponse(textBlock.text)
+    console.log('AI interpreter result:', JSON.stringify(result))
+    return result
   } catch (error) {
     console.error('AI interpreter error:', error instanceof Error ? error.message : error)
     return EMPTY_RESULT
