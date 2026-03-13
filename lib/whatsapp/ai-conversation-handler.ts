@@ -102,8 +102,6 @@ function handleQualifyingWithAI(
 ): HybridResult {
   const { extracted } = aiResult
   const updates: Partial<WhatsAppLead> = {}
-  console.log(`handleQualifyingWithAI: stage=${lead.funnel_stage}, extracted=${JSON.stringify(extracted)}`)
-
   // Collect all extractable fields
   if (extracted.name && !lead.name) updates.name = extracted.name
   if (extracted.trade && !lead.trade) updates.trade = extracted.trade
@@ -165,8 +163,6 @@ function handleGreetingWithAI(
   aiResult: AIExtractionResult
 ): HybridResult {
   const { extracted } = aiResult
-  console.log(`handleGreetingWithAI: intent=${extracted.intent}, name=${extracted.name}, trade=${extracted.trade}, location=${extracted.location_state}, size=${extracted.company_size}`)
-
   // If intent is clear support, route there
   if (extracted.intent === 'support') {
     return { reply: MESSAGES.support, updates: {} }
@@ -180,8 +176,6 @@ function handleGreetingWithAI(
   // If AI extracted qualifying data (name, trade, location, size), use it
   // regardless of intent — the user is providing info, so qualify them
   const hasQualifyingData = extracted.name || extracted.trade || extracted.location_state || extracted.company_size
-  console.log(`handleGreetingWithAI: hasQualifyingData=${!!hasQualifyingData}`)
-
   if (hasQualifyingData) {
     // Clear qualifying fields so AI-extracted data takes priority over stale DB values
     const syntheticLead: WhatsAppLead = {
@@ -192,14 +186,11 @@ function handleGreetingWithAI(
       location_state: null,
       company_size: null,
     }
-    const result = handleQualifyingWithAI(syntheticLead, aiResult)
-    console.log(`handleGreetingWithAI: qualifying result stage=${result.updates.funnel_stage}, reply=${result.reply.substring(0, 80)}`)
-    return result
+    return handleQualifyingWithAI(syntheticLead, aiResult)
   }
 
   // Intent detected but no data — advance to qualifying
   if (extracted.intent === 'learn_more' || extracted.intent === 'talk_to_advisor') {
-    console.log('handleGreetingWithAI: intent detected, no data → askName')
     return {
       reply: MESSAGES.askName,
       updates: { funnel_stage: 'qualifying_name' },
@@ -207,7 +198,6 @@ function handleGreetingWithAI(
   }
 
   // Intent unclear and no data — fall back to menu
-  console.log('handleGreetingWithAI: no intent, no data → fallback to menu')
   return handleMessage(lead, text)
 }
 
