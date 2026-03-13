@@ -58,6 +58,12 @@ REGLAS IMPORTANTES:
 - Para "company_size", usa estos rangos: "1-5", "6-15", "16-50", "50+"
 - Si no puedes extraer un campo con certeza, NO lo incluyas
 
+REGLA CRÍTICA DE EXTRACCIÓN:
+- SIEMPRE extrae name, trade, location_state y company_size si están presentes en el mensaje, SIN IMPORTAR la etapa actual
+- Si el usuario dice "Soy Carlos, soy plomero en Texas con 5 empleados", DEBES extraer los 4 campos
+- La extracción de datos tiene PRIORIDAD sobre la clasificación de intent
+- Un mensaje puede tener intent "greeting" Y contener datos extraíbles — extrae AMBOS
+
 ${stageContext}
 
 CONOCIMIENTO DEL PRODUCTO:
@@ -90,7 +96,7 @@ function getStageContext(lead: WhatsAppLead): string {
 
   const stageInstructions: Record<FunnelStage, string> = {
     new: 'El lead es nuevo. Detecta su intención: ¿quiere información, soporte, o hablar con asesor?',
-    greeting: 'El lead vio el menú. Detecta si eligió una opción o expresó su intención en texto libre.',
+    greeting: 'El lead vio el menú. Detecta su intención Y extrae TODOS los datos que mencione (nombre, oficio, estado, tamaño de empresa). Si dice "Soy Carlos, plomero en California", extrae name="Carlos", trade="plomeria", location_state="California".',
     qualifying_name: 'Necesitamos el NOMBRE del lead. Intenta extraerlo del mensaje.',
     qualifying_trade: 'Necesitamos el OFICIO/TRADE del lead. Mapéalo a uno de los valores estándar.',
     qualifying_location: 'Necesitamos el ESTADO de EE.UU. donde trabaja. Normaliza al nombre completo en inglés.',

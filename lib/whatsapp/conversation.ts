@@ -66,11 +66,18 @@ export function handleMessage(lead: WhatsAppLead, text: string): HandleResult {
   const input = text.trim().toLowerCase()
   const isGreeting = /^(hola|hi|hello|hey|buenos?\s*d[ií]as?|buenas?\s*tardes?|buenas?\s*noches?)$/i.test(input)
 
-  // Allow restart from terminal states
+  // Allow restart from terminal states — clear qualifying data for fresh start
   if (isGreeting && (lead.funnel_stage === 'sales_handoff' || lead.funnel_stage === 'not_interested')) {
     return {
       reply: MESSAGES.greeting,
-      updates: { funnel_stage: 'greeting' },
+      updates: {
+        funnel_stage: 'greeting',
+        name: null,
+        trade: null,
+        location_state: null,
+        company_size: null,
+        qualified_at: null,
+      },
     }
   }
 
