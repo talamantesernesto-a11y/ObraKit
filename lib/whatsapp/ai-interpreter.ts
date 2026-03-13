@@ -12,7 +12,7 @@ import {
 } from './ai-prompts'
 import { normalizeTrade, normalizeState, normalizeCompanySize } from './trade-normalizer'
 
-const AI_MODEL = 'claude-3-5-haiku-20241022'
+const AI_MODEL = 'claude-haiku-4-5-20251001'
 const AI_TIMEOUT_MS = 5_000
 const CONFIDENCE_THRESHOLD = 0.7
 
