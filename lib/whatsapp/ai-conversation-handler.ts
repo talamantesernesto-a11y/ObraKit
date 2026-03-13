@@ -183,9 +183,14 @@ function handleGreetingWithAI(
   console.log(`handleGreetingWithAI: hasQualifyingData=${!!hasQualifyingData}`)
 
   if (hasQualifyingData) {
+    // Clear qualifying fields so AI-extracted data takes priority over stale DB values
     const syntheticLead: WhatsAppLead = {
       ...lead,
       funnel_stage: 'qualifying_name',
+      name: null,
+      trade: null,
+      location_state: null,
+      company_size: null,
     }
     const result = handleQualifyingWithAI(syntheticLead, aiResult)
     console.log(`handleGreetingWithAI: qualifying result stage=${result.updates.funnel_stage}, reply=${result.reply.substring(0, 80)}`)
